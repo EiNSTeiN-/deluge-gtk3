@@ -1,0 +1,5 @@
+# Full source provided in debian/missing-sources
+# Downloaded from http://git.deluge-torrent.org/deluge/tree/deluge/ui/web/js?id=deluge-1.3.12
+source-is-missing  deluge/ui/web/js/ext-all.js
+source-is-missing deluge/ui/web/js/ext-base.js
+source-is-missing deluge/ui/web/js/ext-extensions.js
