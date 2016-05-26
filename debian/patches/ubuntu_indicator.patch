@@ -1,0 +1,18 @@
+Description: Enable indicator support by default on Ubuntu.
+Author: Andrew Starr-Bochicchio <a.starr.b@gmail.com>
+Forwarded: not-needed
+Bug-Ubuntu: https://bugs.launchpad.net/bugs/843805
+
+Index: deluge/deluge/ui/gtkui/gtkui.py
+===================================================================
+--- deluge.orig/deluge/ui/gtkui/gtkui.py	2014-10-05 10:54:28.890303486 -0400
++++ deluge/deluge/ui/gtkui/gtkui.py	2014-10-05 10:54:28.886303422 -0400
+@@ -122,7 +122,7 @@
+     "enable_system_tray": True,
+     "close_to_tray": False,
+     "start_in_tray": False,
+-    "enable_appindicator": False,
++    "enable_appindicator": True,
+     "lock_tray": False,
+     "tray_password": "",
+     "check_new_releases": False,
