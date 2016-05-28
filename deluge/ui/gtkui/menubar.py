@@ -36,7 +36,7 @@
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 import pkg_resources
 
 import deluge.error
@@ -337,7 +337,8 @@ class MenuBar(component.Component):
 
     def show_move_storage_dialog(self, status):
         log.debug("show_move_storage_dialog")
-        glade = gtk.glade.XML(pkg_resources.resource_filename(
+        glade = gtk.Builder()
+        glade.add_from_file(pkg_resources.resource_filename(
             "deluge.ui.gtkui", "glade/move_storage_dialog.glade"
         ))
         # Keep it referenced:
