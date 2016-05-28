@@ -51,18 +51,18 @@ class DetailsTab(Tab):
         glade = component.get("MainWindow").main_glade
 
         self._name = "Details"
-        self._child_widget = glade.get_widget("details_tab")
-        self._tab_label = glade.get_widget("details_tab_label")
+        self._child_widget = glade.get_object("details_tab")
+        self._tab_label = glade.get_object("details_tab_label")
 
         self.label_widgets = [
-            (glade.get_widget("summary_name"), None, ("name",)),
-            (glade.get_widget("summary_total_size"), fsize, ("total_size",)),
-            (glade.get_widget("summary_num_files"), str, ("num_files",)),
-            (glade.get_widget("summary_tracker"), None, ("tracker",)),
-            (glade.get_widget("summary_torrent_path"), None, ("save_path",)),
-            (glade.get_widget("summary_message"), str, ("message",)),
-            (glade.get_widget("summary_hash"), str, ("hash",)),
-            (glade.get_widget("summary_comments"), str, ("comment",))
+            (glade.get_object("summary_name"), None, ("name",)),
+            (glade.get_object("summary_total_size"), fsize, ("total_size",)),
+            (glade.get_object("summary_num_files"), str, ("num_files",)),
+            (glade.get_object("summary_tracker"), None, ("tracker",)),
+            (glade.get_object("summary_torrent_path"), None, ("save_path",)),
+            (glade.get_object("summary_message"), str, ("message",)),
+            (glade.get_object("summary_hash"), str, ("hash",)),
+            (glade.get_object("summary_comments"), str, ("comment",))
         ]
 
     def update(self):

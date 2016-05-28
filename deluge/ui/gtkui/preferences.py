@@ -36,7 +36,7 @@
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gtkgladecompat
+import gtk
 import pkg_resources
 
 import deluge.component as component
@@ -55,21 +55,21 @@ class Preferences(component.Component):
         self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "glade/preferences_dialog.glade"))
-        self.pref_dialog = self.glade.get_widget("pref_dialog")
+        self.pref_dialog = self.glade.get_object("pref_dialog")
         self.pref_dialog.set_transient_for(component.get("MainWindow").window)
         self.pref_dialog.set_icon(common.get_deluge_icon())
-        self.treeview = self.glade.get_widget("treeview")
-        self.notebook = self.glade.get_widget("notebook")
+        self.treeview = self.glade.get_object("treeview")
+        self.notebook = self.glade.get_object("notebook")
         self.gtkui_config = ConfigManager("gtkui.conf")
 
         self.load_pref_dialog_state()
 
-        self.glade.get_widget("image_magnet").set_from_file(
+        self.glade.get_object("image_magnet").set_from_file(
             deluge.common.get_pixmap("magnet.png"))
 
         # Hide the unused associate magnet button on OSX see: #2420
         if deluge.common.osx_check():
-            self.glade.get_widget("button_associate_magnet").hide()
+            self.glade.get_object("button_associate_magnet").hide()
 
         # Setup the liststore for the categories (tab pages)
         self.liststore = gtk.ListStore(int, str)
@@ -89,7 +89,7 @@ class Preferences(component.Component):
         # The third entry is for holding translated plugin names
         self.plugin_liststore = gtk.ListStore(str, bool, str)
         self.plugin_liststore.set_sort_column_id(0, gtk.SORT_ASCENDING)
-        self.plugin_listview = self.glade.get_widget("plugin_listview")
+        self.plugin_listview = self.glade.get_object("plugin_listview")
         self.plugin_listview.set_model(self.plugin_liststore)
         render = gtk.CellRendererToggle()
         render.connect("toggled", self.on_plugin_toggled)
@@ -326,40 +326,40 @@ class Preferences(component.Component):
 
             # Change a few widgets if we're connected to a remote host
             if not client.is_localhost():
-                self.glade.get_widget("entry_download_path").show()
-                self.glade.get_widget("download_path_button").hide()
+                self.glade.get_object("entry_download_path").show()
+                self.glade.get_object("download_path_button").hide()
                 core_widgets.pop("download_path_button")
                 core_widgets["entry_download_path"] = ("text", self.core_config["download_location"])
 
-                self.glade.get_widget("entry_move_completed_path").show()
-                self.glade.get_widget("move_completed_path_button").hide()
+                self.glade.get_object("entry_move_completed_path").show()
+                self.glade.get_object("move_completed_path_button").hide()
                 core_widgets.pop("move_completed_path_button")
                 core_widgets["entry_move_completed_path"] = ("text", self.core_config["move_completed_path"])
 
-                self.glade.get_widget("entry_torrents_path").show()
-                self.glade.get_widget("torrent_files_button").hide()
+                self.glade.get_object("entry_torrents_path").show()
+                self.glade.get_object("torrent_files_button").hide()
                 core_widgets.pop("torrent_files_button")
                 core_widgets["entry_torrents_path"] = ("text", self.core_config["torrentfiles_location"])
 
-                self.glade.get_widget("entry_autoadd").show()
-                self.glade.get_widget("folder_autoadd").hide()
+                self.glade.get_object("entry_autoadd").show()
+                self.glade.get_object("folder_autoadd").hide()
                 core_widgets.pop("folder_autoadd")
                 core_widgets["entry_autoadd"] = ("text", self.core_config["autoadd_location"])
             else:
-                self.glade.get_widget("entry_download_path").hide()
-                self.glade.get_widget("download_path_button").show()
-                self.glade.get_widget("entry_move_completed_path").hide()
-                self.glade.get_widget("move_completed_path_button").show()
-                self.glade.get_widget("entry_torrents_path").hide()
-                self.glade.get_widget("torrent_files_button").show()
-                self.glade.get_widget("entry_autoadd").hide()
-                self.glade.get_widget("folder_autoadd").show()
+                self.glade.get_object("entry_download_path").hide()
+                self.glade.get_object("download_path_button").show()
+                self.glade.get_object("entry_move_completed_path").hide()
+                self.glade.get_object("move_completed_path_button").show()
+                self.glade.get_object("entry_torrents_path").hide()
+                self.glade.get_object("torrent_files_button").show()
+                self.glade.get_object("entry_autoadd").hide()
+                self.glade.get_object("folder_autoadd").show()
 
             # Update the widgets accordingly
             for key in core_widgets.keys():
                 modifier = core_widgets[key][0]
                 value = core_widgets[key][1]
-                widget = self.glade.get_widget(key)
+                widget = self.glade.get_object(key)
                 if type(widget) == gtk.FileChooserButton:
                     for child in widget.get_children():
                         child.set_sensitive(True)
@@ -383,7 +383,7 @@ class Preferences(component.Component):
                     widget.set_text(value)
 
             for key in core_widgets.keys():
-                widget = self.glade.get_widget(key)
+                widget = self.glade.get_object(key)
                 # Update the toggle status if necessary
                 self.on_toggle(widget)
         else:
@@ -460,38 +460,38 @@ class Preferences(component.Component):
 
             # We don't appear to be connected to a daemon
             for key in core_widget_list:
-                widget = self.glade.get_widget(key)
+                widget = self.glade.get_object(key)
                 if type(widget) == gtk.FileChooserButton:
                     for child in widget.get_children():
                         child.set_sensitive(False)
                 widget.set_sensitive(False)
 
         ## Downloads tab ##
-        self.glade.get_widget("chk_show_dialog").set_active(
+        self.glade.get_object("chk_show_dialog").set_active(
             self.gtkui_config["interactive_add"])
-        self.glade.get_widget("chk_focus_dialog").set_active(
+        self.glade.get_object("chk_focus_dialog").set_active(
             self.gtkui_config["focus_add_dialog"])
 
         ## Interface tab ##
-        self.glade.get_widget("chk_use_tray").set_active(
+        self.glade.get_object("chk_use_tray").set_active(
             self.gtkui_config["enable_system_tray"])
-        self.glade.get_widget("chk_min_on_close").set_active(
+        self.glade.get_object("chk_min_on_close").set_active(
             self.gtkui_config["close_to_tray"])
-        self.glade.get_widget("chk_start_in_tray").set_active(
+        self.glade.get_object("chk_start_in_tray").set_active(
             self.gtkui_config["start_in_tray"])
-        self.glade.get_widget("chk_enable_appindicator").set_active(
+        self.glade.get_object("chk_enable_appindicator").set_active(
             self.gtkui_config["enable_appindicator"])
-        self.glade.get_widget("chk_lock_tray").set_active(
+        self.glade.get_object("chk_lock_tray").set_active(
             self.gtkui_config["lock_tray"])
-        self.glade.get_widget("chk_classic_mode").set_active(
+        self.glade.get_object("chk_classic_mode").set_active(
             self.gtkui_config["classic_mode"])
-        self.glade.get_widget("chk_show_rate_in_title").set_active(
+        self.glade.get_object("chk_show_rate_in_title").set_active(
             self.gtkui_config["show_rate_in_title"])
-        self.glade.get_widget("chk_focus_main_window_on_add").set_active(
+        self.glade.get_object("chk_focus_main_window_on_add").set_active(
             self.gtkui_config["focus_main_window_on_add"])
 
         ## Other tab ##
-        self.glade.get_widget("chk_show_new_releases").set_active(
+        self.glade.get_object("chk_show_new_releases").set_active(
             self.gtkui_config["show_new_releases"])
 
 
@@ -535,198 +535,198 @@ class Preferences(component.Component):
 
         ## Downloads tab ##
         new_gtkui_config["interactive_add"] = \
-            self.glade.get_widget("chk_show_dialog").get_active()
+            self.glade.get_object("chk_show_dialog").get_active()
         new_gtkui_config["focus_add_dialog"] = \
-            self.glade.get_widget("chk_focus_dialog").get_active()
+            self.glade.get_object("chk_focus_dialog").get_active()
         new_core_config["copy_torrent_file"] = \
-            self.glade.get_widget("chk_copy_torrent_file").get_active()
+            self.glade.get_object("chk_copy_torrent_file").get_active()
         new_core_config["del_copy_torrent_file"] = \
-            self.glade.get_widget("chk_del_copy_torrent_file").get_active()
+            self.glade.get_object("chk_del_copy_torrent_file").get_active()
         new_core_config["move_completed"] = \
-            self.glade.get_widget("chk_move_completed").get_active()
+            self.glade.get_object("chk_move_completed").get_active()
         if client.is_localhost():
             new_core_config["download_location"] = \
-                self.glade.get_widget("download_path_button").get_filename()
+                self.glade.get_object("download_path_button").get_filename()
             new_core_config["move_completed_path"] = \
-                self.glade.get_widget("move_completed_path_button").get_filename()
+                self.glade.get_object("move_completed_path_button").get_filename()
             new_core_config["torrentfiles_location"] = \
-                self.glade.get_widget("torrent_files_button").get_filename()
+                self.glade.get_object("torrent_files_button").get_filename()
         else:
             new_core_config["download_location"] = \
-                self.glade.get_widget("entry_download_path").get_text()
+                self.glade.get_object("entry_download_path").get_text()
             new_core_config["move_completed_path"] = \
-                self.glade.get_widget("entry_move_completed_path").get_text()
+                self.glade.get_object("entry_move_completed_path").get_text()
             new_core_config["torrentfiles_location"] = \
-                self.glade.get_widget("entry_torrents_path").get_text()
+                self.glade.get_object("entry_torrents_path").get_text()
 
         new_core_config["autoadd_enable"] = \
-            self.glade.get_widget("chk_autoadd").get_active()
+            self.glade.get_object("chk_autoadd").get_active()
         if client.is_localhost():
             new_core_config["autoadd_location"] = \
-                self.glade.get_widget("folder_autoadd").get_filename()
+                self.glade.get_object("folder_autoadd").get_filename()
         else:
             new_core_config["autoadd_location"] = \
-                self.glade.get_widget("entry_autoadd").get_text()
+                self.glade.get_object("entry_autoadd").get_text()
 
         new_core_config["compact_allocation"] = \
-            self.glade.get_widget("radio_compact_allocation").get_active()
+            self.glade.get_object("radio_compact_allocation").get_active()
         new_core_config["prioritize_first_last_pieces"] = \
-            self.glade.get_widget(
+            self.glade.get_object(
                 "chk_prioritize_first_last_pieces").get_active()
         new_core_config["add_paused"] = \
-            self.glade.get_widget("chk_add_paused").get_active()
+            self.glade.get_object("chk_add_paused").get_active()
 
         ## Network tab ##
         listen_ports = (
-            self.glade.get_widget("spin_port_min").get_value_as_int(),
-            self.glade.get_widget("spin_port_max").get_value_as_int()
+            self.glade.get_object("spin_port_min").get_value_as_int(),
+            self.glade.get_object("spin_port_max").get_value_as_int()
         )
         new_core_config["listen_ports"] = listen_ports
         new_core_config["random_port"] = \
-            self.glade.get_widget("chk_random_port").get_active()
+            self.glade.get_object("chk_random_port").get_active()
         outgoing_ports = (
-            self.glade.get_widget("spin_outgoing_port_min").get_value_as_int(),
-            self.glade.get_widget("spin_outgoing_port_max").get_value_as_int()
+            self.glade.get_object("spin_outgoing_port_min").get_value_as_int(),
+            self.glade.get_object("spin_outgoing_port_max").get_value_as_int()
         )
         new_core_config["outgoing_ports"] = outgoing_ports
         new_core_config["random_outgoing_ports"] = \
-            self.glade.get_widget("chk_random_outgoing_ports").get_active()
-        incoming_address = self.glade.get_widget("entry_interface").get_text().strip()
+            self.glade.get_object("chk_random_outgoing_ports").get_active()
+        incoming_address = self.glade.get_object("entry_interface").get_text().strip()
         if deluge.common.is_ip(incoming_address) or not incoming_address:
             new_core_config["listen_interface"] = incoming_address
-        new_core_config["peer_tos"] = self.glade.get_widget("entry_peer_tos").get_text()
-        new_core_config["dht"] = self.glade.get_widget("chk_dht").get_active()
-        new_core_config["upnp"] = self.glade.get_widget("chk_upnp").get_active()
+        new_core_config["peer_tos"] = self.glade.get_object("entry_peer_tos").get_text()
+        new_core_config["dht"] = self.glade.get_object("chk_dht").get_active()
+        new_core_config["upnp"] = self.glade.get_object("chk_upnp").get_active()
         new_core_config["natpmp"] = \
-            self.glade.get_widget("chk_natpmp").get_active()
+            self.glade.get_object("chk_natpmp").get_active()
         new_core_config["utpex"] = \
-            self.glade.get_widget("chk_utpex").get_active()
+            self.glade.get_object("chk_utpex").get_active()
         new_core_config["lsd"] = \
-            self.glade.get_widget("chk_lsd").get_active()
+            self.glade.get_object("chk_lsd").get_active()
         new_core_config["enc_in_policy"] = \
-            self.glade.get_widget("combo_encin").get_active()
+            self.glade.get_object("combo_encin").get_active()
         new_core_config["enc_out_policy"] = \
-            self.glade.get_widget("combo_encout").get_active()
+            self.glade.get_object("combo_encout").get_active()
         new_core_config["enc_level"] = \
-            self.glade.get_widget("combo_enclevel").get_active()
+            self.glade.get_object("combo_enclevel").get_active()
         new_core_config["enc_prefer_rc4"] = \
-            self.glade.get_widget("chk_pref_rc4").get_active()
+            self.glade.get_object("chk_pref_rc4").get_active()
 
         ## Bandwidth tab ##
         new_core_config["max_connections_global"] = \
-            self.glade.get_widget(
+            self.glade.get_object(
                 "spin_max_connections_global").get_value_as_int()
         new_core_config["max_download_speed"] = \
-            self.glade.get_widget("spin_max_download").get_value()
+            self.glade.get_object("spin_max_download").get_value()
         new_core_config["max_upload_speed"] = \
-            self.glade.get_widget("spin_max_upload").get_value()
+            self.glade.get_object("spin_max_upload").get_value()
         new_core_config["max_upload_slots_global"] = \
-            self.glade.get_widget(
+            self.glade.get_object(
                 "spin_max_upload_slots_global").get_value_as_int()
         new_core_config["max_half_open_connections"] = \
-            self.glade.get_widget("spin_max_half_open_connections").get_value_as_int()
+            self.glade.get_object("spin_max_half_open_connections").get_value_as_int()
         new_core_config["max_connections_per_second"] = \
-            self.glade.get_widget(
+            self.glade.get_object(
                 "spin_max_connections_per_second").get_value_as_int()
         new_core_config["max_connections_per_torrent"] = \
-            self.glade.get_widget(
+            self.glade.get_object(
                 "spin_max_connections_per_torrent").get_value_as_int()
         new_core_config["max_upload_slots_per_torrent"] = \
-            self.glade.get_widget(
+            self.glade.get_object(
                 "spin_max_upload_slots_per_torrent").get_value_as_int()
         new_core_config["max_upload_speed_per_torrent"] = \
-            self.glade.get_widget(
+            self.glade.get_object(
                 "spin_max_upload_per_torrent").get_value()
         new_core_config["max_download_speed_per_torrent"] = \
-            self.glade.get_widget(
+            self.glade.get_object(
                 "spin_max_download_per_torrent").get_value()
         new_core_config["ignore_limits_on_local_network"] = \
-            self.glade.get_widget("chk_ignore_limits_on_local_network").get_active()
+            self.glade.get_object("chk_ignore_limits_on_local_network").get_active()
         new_core_config["rate_limit_ip_overhead"] = \
-            self.glade.get_widget("chk_rate_limit_ip_overhead").get_active()
+            self.glade.get_object("chk_rate_limit_ip_overhead").get_active()
 
         ## Interface tab ##
         new_gtkui_config["enable_system_tray"] = \
-            self.glade.get_widget("chk_use_tray").get_active()
+            self.glade.get_object("chk_use_tray").get_active()
         new_gtkui_config["close_to_tray"] = \
-            self.glade.get_widget("chk_min_on_close").get_active()
+            self.glade.get_object("chk_min_on_close").get_active()
         new_gtkui_config["start_in_tray"] = \
-            self.glade.get_widget("chk_start_in_tray").get_active()
+            self.glade.get_object("chk_start_in_tray").get_active()
         new_gtkui_config["enable_appindicator"] = \
-            self.glade.get_widget("chk_enable_appindicator").get_active()
+            self.glade.get_object("chk_enable_appindicator").get_active()
         new_gtkui_config["lock_tray"] = \
-            self.glade.get_widget("chk_lock_tray").get_active()
+            self.glade.get_object("chk_lock_tray").get_active()
         passhex = sha_hash(\
-            self.glade.get_widget("txt_tray_password").get_text()).hexdigest()
+            self.glade.get_object("txt_tray_password").get_text()).hexdigest()
         if passhex != "c07eb5a8c0dc7bb81c217b67f11c3b7a5e95ffd7":
             new_gtkui_config["tray_password"] = passhex
         new_gtkui_config["classic_mode"] = \
-            self.glade.get_widget("chk_classic_mode").get_active()
+            self.glade.get_object("chk_classic_mode").get_active()
         new_gtkui_config["show_rate_in_title"] = \
-            self.glade.get_widget("chk_show_rate_in_title").get_active()
+            self.glade.get_object("chk_show_rate_in_title").get_active()
         new_gtkui_config["focus_main_window_on_add"] = \
-            self.glade.get_widget("chk_focus_main_window_on_add").get_active()
+            self.glade.get_object("chk_focus_main_window_on_add").get_active()
 
         ## Other tab ##
         new_gtkui_config["show_new_releases"] = \
-            self.glade.get_widget("chk_show_new_releases").get_active()
+            self.glade.get_object("chk_show_new_releases").get_active()
         new_core_config["send_info"] = \
-            self.glade.get_widget("chk_send_info").get_active()
+            self.glade.get_object("chk_send_info").get_active()
         new_core_config["geoip_db_location"] = \
-            self.glade.get_widget("entry_geoip").get_text()
+            self.glade.get_object("entry_geoip").get_text()
 
         ## Daemon tab ##
         new_core_config["daemon_port"] = \
-            self.glade.get_widget("spin_daemon_port").get_value_as_int()
+            self.glade.get_object("spin_daemon_port").get_value_as_int()
         new_core_config["allow_remote"] = \
-            self.glade.get_widget("chk_allow_remote_connections").get_active()
+            self.glade.get_object("chk_allow_remote_connections").get_active()
         new_core_config["new_release_check"] = \
-            self.glade.get_widget("chk_new_releases").get_active()
+            self.glade.get_object("chk_new_releases").get_active()
 
         ## Proxy tab ##
         new_core_config["proxies"] = {}
         for t in ("peer", "web_seed", "tracker", "dht"):
             new_core_config["proxies"][t] = {}
             new_core_config["proxies"][t]["type"] = \
-                self.glade.get_widget("combo_proxy_type_%s" % t).get_active()
+                self.glade.get_object("combo_proxy_type_%s" % t).get_active()
             new_core_config["proxies"][t]["port"] = \
-                self.glade.get_widget("spin_proxy_port_%s" % t).get_value_as_int()
+                self.glade.get_object("spin_proxy_port_%s" % t).get_value_as_int()
             new_core_config["proxies"][t]["username"] = \
-                self.glade.get_widget("txt_proxy_username_%s" % t).get_text()
+                self.glade.get_object("txt_proxy_username_%s" % t).get_text()
             new_core_config["proxies"][t]["password"] = \
-                self.glade.get_widget("txt_proxy_password_%s" % t).get_text()
+                self.glade.get_object("txt_proxy_password_%s" % t).get_text()
             new_core_config["proxies"][t]["hostname"] = \
-                self.glade.get_widget("txt_proxy_server_%s" % t).get_text()
+                self.glade.get_object("txt_proxy_server_%s" % t).get_text()
 
         ## Queue tab ##
         new_core_config["queue_new_to_top"] = \
-            self.glade.get_widget("chk_queue_new_top").get_active()
+            self.glade.get_object("chk_queue_new_top").get_active()
         new_core_config["max_active_seeding"] = \
-            self.glade.get_widget("spin_seeding").get_value_as_int()
+            self.glade.get_object("spin_seeding").get_value_as_int()
         new_core_config["max_active_downloading"] = \
-            self.glade.get_widget("spin_downloading").get_value_as_int()
+            self.glade.get_object("spin_downloading").get_value_as_int()
         new_core_config["max_active_limit"] = \
-            self.glade.get_widget("spin_active").get_value_as_int()
+            self.glade.get_object("spin_active").get_value_as_int()
         new_core_config["dont_count_slow_torrents"] = \
-            self.glade.get_widget("chk_dont_count_slow_torrents").get_active()
+            self.glade.get_object("chk_dont_count_slow_torrents").get_active()
         new_core_config["stop_seed_at_ratio"] = \
-            self.glade.get_widget("chk_seed_ratio").get_active()
+            self.glade.get_object("chk_seed_ratio").get_active()
         new_core_config["remove_seed_at_ratio"] = \
-            self.glade.get_widget("chk_remove_ratio").get_active()
+            self.glade.get_object("chk_remove_ratio").get_active()
         new_core_config["stop_seed_ratio"] = \
-            self.glade.get_widget("spin_share_ratio").get_value()
+            self.glade.get_object("spin_share_ratio").get_value()
         new_core_config["share_ratio_limit"] = \
-            self.glade.get_widget("spin_share_ratio_limit").get_value()
+            self.glade.get_object("spin_share_ratio_limit").get_value()
         new_core_config["seed_time_ratio_limit"] = \
-            self.glade.get_widget("spin_seed_time_ratio_limit").get_value()
+            self.glade.get_object("spin_seed_time_ratio_limit").get_value()
         new_core_config["seed_time_limit"] = \
-            self.glade.get_widget("spin_seed_time_limit").get_value()
+            self.glade.get_object("spin_seed_time_limit").get_value()
 
         ## Cache tab ##
         new_core_config["cache_size"] = \
-            self.glade.get_widget("spin_cache_size").get_value_as_int()
+            self.glade.get_object("spin_cache_size").get_value_as_int()
         new_core_config["cache_expiry"] = \
-            self.glade.get_widget("spin_cache_expiry").get_value_as_int()
+            self.glade.get_object("spin_cache_expiry").get_value_as_int()
 
         # Run plugin hook to apply preferences
         component.get("PluginManager").run_on_apply_prefs()
@@ -779,12 +779,18 @@ class Preferences(component.Component):
 
 
     def hide(self):
-        self.glade.get_widget("port_img").hide()
+        self.glade.get_object("port_img").hide()
         self.pref_dialog.hide()
+
+    def __get_widget_prefix(self, prefix):
+        for widget in self.glade.get_objects():
+            if 'get_name' in dir(widget):
+                if widget.get_name().startswith(prefix):
+                    yield widget
 
     def __update_cache_status(self):
         # Updates the cache status labels with the info in the dict
-        for widget in self.glade.get_widget_prefix("label_cache_"):
+        for widget in self.__get_widget_prefix("label_cache_"):
             key = widget.get_name()[len("label_cache_"):]
             value = self.cache_status[key]
             if type(value) == float:
@@ -847,14 +853,14 @@ class Preferences(component.Component):
         def update_dependent_widgets(name, value):
             dependency = dependents[name]
             for dep in dependency.keys():
-                depwidget = self.glade.get_widget(dep)
+                depwidget = self.glade.get_object(dep)
                 sensitive = [not value, value][dependency[dep]]
                 depwidget.set_sensitive(sensitive)
                 if dep in dependents:
                     update_dependent_widgets(dep, depwidget.get_active() and sensitive)
 
         for key in dependents.keys():
-            if widget != self.glade.get_widget(key):
+            if widget != self.glade.get_object(key):
                 continue
             update_dependent_widgets(key, value)
 
@@ -884,16 +890,16 @@ class Preferences(component.Component):
         log.debug("on_test_port_clicked")
         def on_get_test(status):
             if status:
-                self.glade.get_widget("port_img").set_from_stock(gtk.STOCK_YES, 4)
-                self.glade.get_widget("port_img").show()
+                self.glade.get_object("port_img").set_from_stock(gtk.STOCK_YES, 4)
+                self.glade.get_object("port_img").show()
             else:
-                self.glade.get_widget("port_img").set_from_stock(gtk.STOCK_DIALOG_WARNING, 4)
-                self.glade.get_widget("port_img").show()
+                self.glade.get_object("port_img").set_from_stock(gtk.STOCK_DIALOG_WARNING, 4)
+                self.glade.get_object("port_img").show()
         client.core.test_listen_port().addCallback(on_get_test)
-        self.glade.get_widget("port_img").set_from_file(
+        self.glade.get_object("port_img").set_from_file(
             deluge.common.get_pixmap('loading.gif')
         )
-        self.glade.get_widget("port_img").show()
+        self.glade.get_object("port_img").show()
         client.force_call()
 
     def on_plugin_toggled(self, renderer, path):
@@ -915,11 +921,11 @@ class Preferences(component.Component):
             return
         name = model[itr][0]
         plugin_info = component.get("PluginManager").get_plugin_info(name)
-        self.glade.get_widget("label_plugin_author").set_text(plugin_info["Author"])
-        self.glade.get_widget("label_plugin_version").set_text(plugin_info["Version"])
-        self.glade.get_widget("label_plugin_email").set_text(plugin_info["Author-email"])
-        self.glade.get_widget("label_plugin_homepage").set_text(plugin_info["Home-page"])
-        self.glade.get_widget("label_plugin_details").set_text(plugin_info["Description"])
+        self.glade.get_object("label_plugin_author").set_text(plugin_info["Author"])
+        self.glade.get_object("label_plugin_version").set_text(plugin_info["Version"])
+        self.glade.get_object("label_plugin_email").set_text(plugin_info["Author-email"])
+        self.glade.get_object("label_plugin_homepage").set_text(plugin_info["Home-page"])
+        self.glade.get_object("label_plugin_details").set_text(plugin_info["Description"])
 
     def _on_button_plugin_install_clicked(self, widget):
         log.debug("_on_button_plugin_install_clicked")
@@ -994,12 +1000,12 @@ class Preferences(component.Component):
 
         for h in hides:
             for p in prefixes:
-                w = self.glade.get_widget(p + h + "_" + name)
+                w = self.glade.get_object(p + h + "_" + name)
                 if w:
                     w.hide()
         for s in shows:
             for p in prefixes:
-                w = self.glade.get_widget(p + s + "_" + name)
+                w = self.glade.get_object(p + s + "_" + name)
                 if w:
                     w.show()
 

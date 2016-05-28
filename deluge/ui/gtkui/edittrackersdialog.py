@@ -34,7 +34,7 @@
 #
 
 
-import gtk, gtkgladecompat
+import gtk
 import pkg_resources
 
 import deluge.common
@@ -51,11 +51,11 @@ class EditTrackersDialog:
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "glade/edit_trackers.glade"))
 
-        self.dialog = self.glade.get_widget("edit_trackers_dialog")
-        self.treeview = self.glade.get_widget("tracker_treeview")
-        self.add_tracker_dialog = self.glade.get_widget("add_tracker_dialog")
+        self.dialog = self.glade.get_object("edit_trackers_dialog")
+        self.treeview = self.glade.get_object("tracker_treeview")
+        self.add_tracker_dialog = self.glade.get_object("add_tracker_dialog")
         self.add_tracker_dialog.set_transient_for(self.dialog)
-        self.edit_tracker_entry = self.glade.get_widget("edit_tracker_entry")
+        self.edit_tracker_entry = self.glade.get_object("edit_tracker_entry")
         self.edit_tracker_entry.set_transient_for(self.dialog)
         self.dialog.set_icon(common.get_deluge_icon())
 
@@ -118,7 +118,7 @@ class EditTrackersDialog:
         log.debug("on_button_add_clicked")
         # Show the add tracker dialog
         self.add_tracker_dialog.show()
-        self.glade.get_widget("textview_trackers").grab_focus()
+        self.glade.get_object("textview_trackers").grab_focus()
 
     def on_button_remove_clicked(self, widget):
         log.debug("on_button_remove_clicked")
@@ -132,9 +132,9 @@ class EditTrackersDialog:
         selected = self.get_selected()
         if selected:
             tracker = self.liststore.get_value(selected, 1)
-            self.glade.get_widget("entry_edit_tracker").set_text(tracker)
+            self.glade.get_object("entry_edit_tracker").set_text(tracker)
             self.edit_tracker_entry.show()
-            self.glade.get_widget("edit_tracker_entry").grab_focus()
+            self.glade.get_object("edit_tracker_entry").grab_focus()
 
     def on_button_edit_cancel_clicked(self, widget):
         log.debug("on_button_edit_cancel_clicked")
@@ -143,7 +143,7 @@ class EditTrackersDialog:
     def on_button_edit_ok_clicked(self, widget):
         log.debug("on_button_edit_ok_clicked")
         selected = self.get_selected()
-        tracker = self.glade.get_widget("entry_edit_tracker").get_text()
+        tracker = self.glade.get_object("entry_edit_tracker").get_text()
         self.liststore.set_value(selected, 1, tracker)
         self.edit_tracker_entry.hide()
 
@@ -190,7 +190,7 @@ class EditTrackersDialog:
         log.debug("on_button_add_ok_clicked")
 
         # Create a list of trackers from the textview widget
-        textview = self.glade.get_widget("textview_trackers")
+        textview = self.glade.get_object("textview_trackers")
         trackers = []
         b = textview.get_buffer()
         lines = b.get_text(b.get_start_iter(), b.get_end_iter()).strip().split("\n")
@@ -225,5 +225,5 @@ class EditTrackersDialog:
         log.debug("on_button_add_cancel_clicked")
         # Clear the entry widget and hide the dialog
         b = gtk.TextBuffer()
-        self.glade.get_widget("textview_trackers").set_buffer(b)
+        self.glade.get_object("textview_trackers").set_buffer(b)
         self.add_tracker_dialog.hide()

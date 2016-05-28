@@ -39,7 +39,7 @@ import os
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gtkgladecompat
+import gtk
 
 import pkg_resources
 
@@ -157,22 +157,22 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
     glade.add_from_file(
         pkg_resources.resource_filename("deluge.ui.gtkui",
                                     "glade/dgtkpopups.glade"))
-    dialog = glade.get_widget("other_dialog")
+    dialog = glade.get_object("other_dialog")
     dialog.set_transient_for(component.get("MainWindow").window)
     dialog.set_title("")
-    glade.get_widget("label_header").set_markup("<b>" + header + "</b>")
-    glade.get_widget("label_type").set_text(type_str)
+    glade.get_object("label_header").set_markup("<b>" + header + "</b>")
+    glade.get_object("label_type").set_text(type_str)
     if image_stockid:
-        glade.get_widget("image").set_from_stock(image_stockid, gtk.ICON_SIZE_LARGE_TOOLBAR)
+        glade.get_object("image").set_from_stock(image_stockid, gtk.ICON_SIZE_LARGE_TOOLBAR)
     if image_filename:
         # Hack for Windows since it doesn't support svg
         if os.path.splitext(image_filename)[1] == ".svg" and (deluge.common.windows_check() or deluge.common.osx_check()):
             image_filename = os.path.splitext(image_filename)[0] + "16.png"
         pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(
             deluge.common.get_pixmap(image_filename), 32, 32)
-        glade.get_widget("image").set_from_pixbuf(pixbuf)
+        glade.get_object("image").set_from_pixbuf(pixbuf)
 
-    spinbutton = glade.get_widget("spinbutton")
+    spinbutton = glade.get_object("spinbutton")
     if type(default) == float:
         spinbutton.set_digits(1)
 

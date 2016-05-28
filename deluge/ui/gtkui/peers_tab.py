@@ -34,7 +34,7 @@
 #
 
 
-import gtk, gtkgladecompat
+import gtk
 import os.path
 import cPickle
 import pkg_resources
@@ -63,14 +63,14 @@ class PeersTab(Tab):
         glade = window.get_glade()
 
         self._name = "Peers"
-        self._child_widget = glade.get_widget("peers_tab")
-        self._tab_label = glade.get_widget("peers_tab_label")
-        self.peer_menu = glade.get_widget("menu_peer_tab")
+        self._child_widget = glade.get_object("peers_tab")
+        self._tab_label = glade.get_object("peers_tab_label")
+        self.peer_menu = glade.get_object("menu_peer_tab")
         window.insert_signals({
             "on_menuitem_add_peer_activate": self._on_menuitem_add_peer_activate,
             })
 
-        self.listview = glade.get_widget("peers_listview")
+        self.listview = glade.get_object("peers_listview")
         self.listview.props.has_tooltip = True
         self.listview.connect("button-press-event", self._on_button_press_event)
         self.listview.connect("query-tooltip", self._on_query_tooltip)
@@ -383,8 +383,8 @@ class PeersTab(Tab):
         dialog_glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
                 "glade/dgtkpopups.glade"))
-        peer_dialog = dialog_glade.get_widget("connect_peer_dialog")
-        txt_ip = dialog_glade.get_widget("txt_ip")
+        peer_dialog = dialog_glade.get_object("connect_peer_dialog")
+        txt_ip = dialog_glade.get_object("txt_ip")
         response = peer_dialog.run()
         if response:
             value = txt_ip.get_text()

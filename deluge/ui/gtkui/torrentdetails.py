@@ -78,10 +78,10 @@ class TorrentDetails(component.Component):
         self.window = component.get("MainWindow")
         glade = self.window.main_glade
 
-        self.notebook = glade.get_widget("torrent_info")
+        self.notebook = glade.get_object("torrent_info")
 
         # This is the menu item we'll attach the tabs checklist menu to
-        self.menu_tabs = glade.get_widget("menu_tabs")
+        self.menu_tabs = glade.get_object("menu_tabs")
 
         self.notebook.connect("switch-page", self._on_switch_page)
 

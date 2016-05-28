@@ -45,22 +45,22 @@ class OptionsTab(Tab):
         glade = window.get_glade()
 
         self._name = "Options"
-        self._child_widget = glade.get_widget("options_tab")
-        self._tab_label = glade.get_widget("options_tab_label")
+        self._child_widget = glade.get_object("options_tab")
+        self._tab_label = glade.get_object("options_tab_label")
 
-        self.spin_max_download = glade.get_widget("spin_max_download")
-        self.spin_max_upload = glade.get_widget("spin_max_upload")
-        self.spin_max_connections = glade.get_widget("spin_max_connections")
-        self.spin_max_upload_slots = glade.get_widget("spin_max_upload_slots")
-        self.chk_private = glade.get_widget("chk_private")
-        self.chk_prioritize_first_last = glade.get_widget("chk_prioritize_first_last")
-        self.chk_auto_managed = glade.get_widget("chk_auto_managed")
-        self.chk_stop_at_ratio = glade.get_widget("chk_stop_at_ratio")
-        self.chk_remove_at_ratio = glade.get_widget("chk_remove_at_ratio")
-        self.spin_stop_ratio = glade.get_widget("spin_stop_ratio")
-        self.chk_move_completed = glade.get_widget("chk_move_completed")
-        self.filechooser_move_completed = glade.get_widget("filechooser_move_completed")
-        self.entry_move_completed = glade.get_widget("entry_move_completed")
+        self.spin_max_download = glade.get_object("spin_max_download")
+        self.spin_max_upload = glade.get_object("spin_max_upload")
+        self.spin_max_connections = glade.get_object("spin_max_connections")
+        self.spin_max_upload_slots = glade.get_object("spin_max_upload_slots")
+        self.chk_private = glade.get_object("chk_private")
+        self.chk_prioritize_first_last = glade.get_object("chk_prioritize_first_last")
+        self.chk_auto_managed = glade.get_object("chk_auto_managed")
+        self.chk_stop_at_ratio = glade.get_object("chk_stop_at_ratio")
+        self.chk_remove_at_ratio = glade.get_object("chk_remove_at_ratio")
+        self.spin_stop_ratio = glade.get_object("spin_stop_ratio")
+        self.chk_move_completed = glade.get_object("chk_move_completed")
+        self.filechooser_move_completed = glade.get_object("filechooser_move_completed")
+        self.entry_move_completed = glade.get_object("entry_move_completed")
 
         self.prev_torrent_id = None
         self.prev_status = None

@@ -52,8 +52,8 @@ class SideBar(component.Component):
         component.Component.__init__(self, "SideBar")
         self.window = component.get("MainWindow")
         glade = self.window.main_glade
-        self.notebook = glade.get_widget("sidebar_notebook")
-        self.hpaned = glade.get_widget("hpaned")
+        self.notebook = glade.get_object("sidebar_notebook")
+        self.hpaned = glade.get_object("hpaned")
         self.config = ConfigManager("gtkui.conf")
         #self.hpaned_position = self.hpaned.get_position()
 

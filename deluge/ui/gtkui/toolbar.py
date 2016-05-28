@@ -50,7 +50,7 @@ class ToolBar(component.Component):
         component.Component.__init__(self, "ToolBar")
         log.debug("ToolBar Init..")
         self.window = component.get("MainWindow")
-        self.toolbar = self.window.main_glade.get_widget("toolbar")
+        self.toolbar = self.window.main_glade.get_object("toolbar")
         self.config = ConfigManager("gtkui.conf")
         ### Connect Signals ###
         self.window.insert_signals({
@@ -78,14 +78,14 @@ class ToolBar(component.Component):
         self.visible(self.config["show_toolbar"])
 
     def start(self):
-        self.window.main_glade.get_widget("toolbutton_connectionmanager").set_visible(not self.config["classic_mode"])
+        self.window.main_glade.get_object("toolbutton_connectionmanager").set_visible(not self.config["classic_mode"])
 
         for widget in self.change_sensitivity:
-            self.window.main_glade.get_widget(widget).set_sensitive(True)
+            self.window.main_glade.get_object(widget).set_sensitive(True)
 
     def stop(self):
         for widget in self.change_sensitivity:
-            self.window.main_glade.get_widget(widget).set_sensitive(False)
+            self.window.main_glade.get_object(widget).set_sensitive(False)
 
     def visible(self, visible):
         if visible:

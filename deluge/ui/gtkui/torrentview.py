@@ -217,7 +217,7 @@ class TorrentView(listview.ListView, component.Component):
         self.window = component.get("MainWindow")
         # Call the ListView constructor
         listview.ListView.__init__(self,
-                            self.window.main_glade.get_widget("torrent_view"),
+                            self.window.main_glade.get_object("torrent_view"),
                             "torrentview.state")
         log.debug("TorrentView Init..")
 
@@ -233,7 +233,7 @@ class TorrentView(listview.ListView, component.Component):
         # Register the columns menu with the listview so it gets updated
         # accordingly.
         self.register_checklist_menu(
-                            self.window.main_glade.get_widget("menu_columns"))
+                            self.window.main_glade.get_object("menu_columns"))
 
         # Add the columns to the listview
         self.add_text_column("torrent_id", hidden=True)

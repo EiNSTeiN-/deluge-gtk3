@@ -104,7 +104,7 @@ class SystemTray(component.Component):
                 self.on_menuitem_quitdaemon_activate
         })
 
-        self.tray_menu = self.tray_glade.get_widget("tray_menu")
+        self.tray_menu = self.tray_glade.get_object("tray_menu")
 
         if appindicator and self.config["enable_appindicator"]:
             log.debug("Enabling the Application Indicator..")
@@ -122,9 +122,9 @@ class SystemTray(component.Component):
             self._sig_win_hide = self.window.window.connect("hide", self._on_window_hide)
             self._sig_win_show = self.window.window.connect("show", self._on_window_show)
             if self.window.visible():
-                self.tray_glade.get_widget("menuitem_show_deluge").set_active(True)
+                self.tray_glade.get_object("menuitem_show_deluge").set_active(True)
             else:
-                self.tray_glade.get_widget("menuitem_show_deluge").set_active(False)
+                self.tray_glade.get_object("menuitem_show_deluge").set_active(False)
 
             # Show the Application Indicator
             self.indicator.set_status(appindicator.STATUS_ACTIVE)
@@ -144,9 +144,9 @@ class SystemTray(component.Component):
             self.tray.connect("activate", self.on_tray_clicked)
             self.tray.connect("popup-menu", self.on_tray_popup)
 
-        self.tray_glade.get_widget("download-limit-image").set_from_file(
+        self.tray_glade.get_object("download-limit-image").set_from_file(
                 deluge.common.get_pixmap("downloading16.png"))
-        self.tray_glade.get_widget("upload-limit-image").set_from_file(
+        self.tray_glade.get_object("upload-limit-image").set_from_file(
                 deluge.common.get_pixmap("seeding16.png"))
 
         client.register_event_handler("ConfigValueChangedEvent", self.config_value_changed)
@@ -156,7 +156,7 @@ class SystemTray(component.Component):
         else:
             # Hide menu widgets because we're not connected to a host.
             for widget in self.hide_widget_list:
-                self.tray_glade.get_widget(widget).hide()
+                self.tray_glade.get_object(widget).hide()
 
     def __start(self):
         if self.config["enable_system_tray"]:
@@ -167,12 +167,12 @@ class SystemTray(component.Component):
                     self.hide_widget_list.remove("separatormenuitem4")
                 except ValueError:
                     pass
-                self.tray_glade.get_widget("menuitem_quitdaemon").hide()
-                self.tray_glade.get_widget("separatormenuitem4").hide()
+                self.tray_glade.get_object("menuitem_quitdaemon").hide()
+                self.tray_glade.get_object("separatormenuitem4").hide()
 
             # Show widgets in the hide list because we've connected to a host
             for widget in self.hide_widget_list:
-                self.tray_glade.get_widget(widget).show()
+                self.tray_glade.get_object(widget).show()
 
             # Build the bandwidth speed limit menus
             self.build_tray_bwsetsubmenu()
@@ -192,7 +192,7 @@ class SystemTray(component.Component):
             try:
                 # Hide widgets in hide list because we're not connected to a host
                 for widget in self.hide_widget_list:
-                    self.tray_glade.get_widget(widget).hide()
+                    self.tray_glade.get_object(widget).hide()
             except Exception, e:
                 log.debug("Unable to hide system tray menu widgets: %s", e)
 
@@ -237,9 +237,9 @@ class SystemTray(component.Component):
         # Tool tip text not available for appindicator
         if appindicator and self.config["enable_appindicator"]:
             if self.window.visible():
-                self.tray_glade.get_widget("menuitem_show_deluge").set_active(True)
+                self.tray_glade.get_object("menuitem_show_deluge").set_active(True)
             else:
-                self.tray_glade.get_widget("menuitem_show_deluge").set_active(False)
+                self.tray_glade.get_object("menuitem_show_deluge").set_active(False)
             return
 
         # Set the tool tip text
@@ -277,9 +277,9 @@ class SystemTray(component.Component):
                 self.max_upload_speed,
                 _("KiB/s"), show_notset=True, show_other=True)
         # Add the sub-menus to the tray menu
-        self.tray_glade.get_widget("menuitem_download_limit").set_submenu(
+        self.tray_glade.get_object("menuitem_download_limit").set_submenu(
             submenu_bwdownset)
-        self.tray_glade.get_widget("menuitem_upload_limit").set_submenu(
+        self.tray_glade.get_object("menuitem_upload_limit").set_submenu(
             submenu_bwupset)
 
         # Show the sub-menus for all to see
@@ -346,9 +346,9 @@ class SystemTray(component.Component):
         self.blink(False)
 
         if self.window.visible():
-            self.tray_glade.get_widget("menuitem_show_deluge").set_active(True)
+            self.tray_glade.get_object("menuitem_show_deluge").set_active(True)
         else:
-            self.tray_glade.get_widget("menuitem_show_deluge").set_active(False)
+            self.tray_glade.get_object("menuitem_show_deluge").set_active(False)
 
         popup_function = gtk.status_icon_position_menu
         if deluge.common.windows_check():
@@ -403,12 +403,12 @@ class SystemTray(component.Component):
     def _on_window_hide(self, widget, data=None):
         """_on_window_hide - update the menuitem's status"""
         log.debug("_on_window_hide")
-        self.tray_glade.get_widget("menuitem_show_deluge").set_active(False)
+        self.tray_glade.get_object("menuitem_show_deluge").set_active(False)
 
     def _on_window_show(self, widget, data=None):
         """_on_window_show - update the menuitem's status"""
         log.debug("_on_window_show")
-        self.tray_glade.get_widget("menuitem_show_deluge").set_active(True)
+        self.tray_glade.get_object("menuitem_show_deluge").set_active(True)
 
     def setbwlimit(self, widget, string, core_key, ui_key, default, image):
         """Sets the bandwidth limit based on the user selection."""

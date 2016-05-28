@@ -46,7 +46,7 @@ def accel_meta(item, group, key):
 def menubar_osx(gtkui, osxapp):
 	window = gtkui.mainwindow
 	glade  = window.main_glade
-	menubar = glade.get_widget("menubar")
+	menubar = glade.get_object("menubar")
 	group = gtk.accel_groups_from_object(window.window)[0]
 
 	config = ConfigManager("gtkui.conf")
@@ -55,7 +55,7 @@ def menubar_osx(gtkui, osxapp):
 	# because of libglade not setting MenuItem accel groups
 	# That's why we remove / set accelerators by hand... (dirty)
 	# Clean solution: migrate glades files to gtkbuilder format
-	file_menu = glade.get_widget("menu_file").get_submenu()
+	file_menu = glade.get_object("menu_file").get_submenu()
 	file_items = file_menu.get_children()
 	accel_meta(file_items[0], group, 'o')
 	accel_meta(file_items[1], group, 'n')
@@ -65,7 +65,7 @@ def menubar_osx(gtkui, osxapp):
 	for item in range(2, len(file_items)): # remove quits
 		file_menu.remove(file_items[item])
 
-	menu_widget = glade.get_widget("menu_edit")
+	menu_widget = glade.get_object("menu_edit")
 	edit_menu = menu_widget.get_submenu()
 	edit_items = edit_menu.get_children()
 	pref_item = edit_items[0]
@@ -78,7 +78,7 @@ def menubar_osx(gtkui, osxapp):
 
 	menubar.remove(menu_widget)
 
-	help_menu = glade.get_widget("menu_help").get_submenu()
+	help_menu = glade.get_object("menu_help").get_submenu()
 	help_items = help_menu.get_children()
 	about_item = help_items[4]
 	help_menu.remove(about_item)

@@ -108,10 +108,10 @@ class FilesTab(Tab):
         glade = window.get_glade()
 
         self._name = "Files"
-        self._child_widget = glade.get_widget("files_tab")
-        self._tab_label = glade.get_widget("files_tab_label")
+        self._child_widget = glade.get_object("files_tab")
+        self._tab_label = glade.get_object("files_tab_label")
 
-        self.listview = glade.get_widget("files_listview")
+        self.listview = glade.get_object("files_listview")
         # filename, size, progress string, progress value, priority, file index, icon id
         self.treestore = gtk.TreeStore(str, gobject.TYPE_UINT64, str, float, int, int, str)
 
@@ -188,18 +188,18 @@ class FilesTab(Tab):
 
         self.listview.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
 
-        self.file_menu = glade.get_widget("menu_file_tab")
+        self.file_menu = glade.get_object("menu_file_tab")
         self.file_menu_priority_items = [
-            glade.get_widget("menuitem_donotdownload"),
-            glade.get_widget("menuitem_normal"),
-            glade.get_widget("menuitem_high"),
-            glade.get_widget("menuitem_highest"),
-            glade.get_widget("menuitem_priority_sep")
+            glade.get_object("menuitem_donotdownload"),
+            glade.get_object("menuitem_normal"),
+            glade.get_object("menuitem_high"),
+            glade.get_object("menuitem_highest"),
+            glade.get_object("menuitem_priority_sep")
         ]
 
         self.localhost_widgets = [
-            glade.get_widget("menuitem_open_file"),
-            glade.get_widget("menuitem3")
+            glade.get_object("menuitem_open_file"),
+            glade.get_object("menuitem3")
         ]
 
         self.listview.connect("row-activated", self._on_row_activated)

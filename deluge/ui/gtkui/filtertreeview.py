@@ -36,7 +36,6 @@
 
 
 import gtk
-import gtkgladecompat
 import pkg_resources
 import warnings
 from gobject import GError
@@ -96,8 +95,8 @@ class FilterTreeView(component.Component):
         component.Component.__init__(self, "FilterTreeView", interval=2)
         self.window = component.get("MainWindow")
         glade = self.window.main_glade
-        self.hpaned = glade.get_widget("hpaned")
-        self.scrolled = glade.get_widget("scrolledwindow_sidebar")
+        self.hpaned = glade.get_object("hpaned")
+        self.scrolled = glade.get_object("scrolledwindow_sidebar")
         self.sidebar = component.get("SideBar")
         self.config = ConfigManager("gtkui.conf")
         self.tracker_icons = component.get("TrackerIcons")
@@ -112,7 +111,7 @@ class FilterTreeView(component.Component):
         glade_menu = gtk.Builder()
         glade_menu.add_from_file(pkg_resources.resource_filename("deluge.ui.gtkui",
             "glade/filtertree_menu.glade"))
-        self.menu = glade_menu.get_widget("filtertree_menu")
+        self.menu = glade_menu.get_object("filtertree_menu")
         glade_menu.connect_signals({
             "select_all": self.on_select_all,
             "pause_all": self.on_pause_all,

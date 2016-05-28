@@ -36,7 +36,7 @@
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gtkgladecompat
+import gtk
 import gobject
 import pkg_resources
 from hashlib import sha1 as sha
@@ -73,11 +73,11 @@ class MainWindow(component.Component):
 
         self.window_signals = {}
 
-        self.window = self.main_glade.get_widget("main_window")
+        self.window = self.main_glade.get_object("main_window")
 
         self.window.set_icon(common.get_deluge_icon())
 
-        self.vpaned = self.main_glade.get_widget("vpaned")
+        self.vpaned = self.main_glade.get_object("vpaned")
         self.initial_vpaned_position = self.config["window_pane_position"]
 
         # Load the window state
