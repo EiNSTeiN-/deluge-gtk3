@@ -34,7 +34,7 @@
 #
 
 
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 import pkg_resources
 
 import deluge.common
@@ -46,7 +46,8 @@ from deluge.log import LOG as log
 class EditTrackersDialog:
     def __init__(self, torrent_id, parent=None):
         self.torrent_id = torrent_id
-        self.glade = gtk.glade.XML(
+        self.glade = gtk.Builder()
+        self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "glade/edit_trackers.glade"))
 
@@ -62,7 +63,7 @@ class EditTrackersDialog:
             self.dialog.set_transient_for(parent)
 
         # Connect the signals
-        self.glade.signal_autoconnect({
+        self.glade.connect_signals({
             "on_button_up_clicked": self.on_button_up_clicked,
             "on_button_add_clicked": self.on_button_add_clicked,
             "on_button_edit_clicked": self.on_button_edit_clicked,
