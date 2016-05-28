@@ -52,7 +52,8 @@ from deluge.log import LOG as log
 
 class CreateTorrentDialog:
     def show(self):
-        self.glade = gtk.glade.XML(
+        self.glade = gtk.Builder()
+        self.glade.add_from_file(
             pkg_resources.resource_filename(
                 "deluge.ui.gtkui",
                 "glade/create_torrent_dialog.glade"))
@@ -62,7 +63,7 @@ class CreateTorrentDialog:
         self.dialog = self.glade.get_widget("create_torrent_dialog")
         self.dialog.set_transient_for(component.get("MainWindow").window)
 
-        self.glade.signal_autoconnect({
+        self.glade.connect_signals({
             "on_button_file_clicked": self._on_button_file_clicked,
             "on_button_folder_clicked": self._on_button_folder_clicked,
             "on_button_remote_path_clicked": self._on_button_remote_path_clicked,
