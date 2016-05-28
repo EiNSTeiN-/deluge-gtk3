@@ -36,7 +36,7 @@
 
 
 import gtk
-import gtk.glade
+import gtkgladecompat
 import pkg_resources
 import warnings
 from gobject import GError
@@ -109,10 +109,11 @@ class FilterTreeView(component.Component):
         self.sidebar.notebook.connect("hide", self._on_hide)
 
         #menu
-        glade_menu = gtk.glade.XML(pkg_resources.resource_filename("deluge.ui.gtkui",
+        glade_menu = gtk.Builder()
+        glade_menu.add_from_file(pkg_resources.resource_filename("deluge.ui.gtkui",
             "glade/filtertree_menu.glade"))
         self.menu = glade_menu.get_widget("filtertree_menu")
-        glade_menu.signal_autoconnect({
+        glade_menu.connect_signals({
             "select_all": self.on_select_all,
             "pause_all": self.on_pause_all,
             "resume_all": self.on_resume_all
