@@ -34,7 +34,7 @@
 #
 
 
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 import os.path
 import cPickle
 import pkg_resources
@@ -379,7 +379,8 @@ class PeersTab(Tab):
     def _on_menuitem_add_peer_activate(self, menuitem):
         """This is a callback for manually adding a peer"""
         log.debug("on_menuitem_add_peer")
-        dialog_glade = gtk.glade.XML(
+        dialog_glade = gtk.Builder()
+        dialog_glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
                 "glade/dgtkpopups.glade"))
         peer_dialog = dialog_glade.get_widget("connect_peer_dialog")

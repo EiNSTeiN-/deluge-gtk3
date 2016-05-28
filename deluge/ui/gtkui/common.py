@@ -39,7 +39,7 @@ import os
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 
 import pkg_resources
 
@@ -153,7 +153,8 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
     if type(default) != int and type(default) != float:
         raise TypeError("default value needs to be an int or float")
 
-    glade = gtk.glade.XML(
+    glade = gtk.Builder()
+    glade.add_from_file(
         pkg_resources.resource_filename("deluge.ui.gtkui",
                                     "glade/dgtkpopups.glade"))
     dialog = glade.get_widget("other_dialog")
