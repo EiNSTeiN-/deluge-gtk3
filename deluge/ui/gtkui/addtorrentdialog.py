@@ -36,7 +36,7 @@
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 import gettext
 import gobject
 import base64
@@ -61,7 +61,8 @@ import common
 class AddTorrentDialog(component.Component):
     def __init__(self):
         component.Component.__init__(self, "AddTorrentDialog")
-        self.glade = gtk.glade.XML(
+        self.glade = gtk.Builder()
+        self.glade.add_from_file(
             pkg_resources.resource_filename(
                 "deluge.ui.gtkui", "glade/add_torrent_dialog.glade"))
 
@@ -69,7 +70,7 @@ class AddTorrentDialog(component.Component):
 
         self.dialog.connect("delete-event", self._on_delete_event)
 
-        self.glade.signal_autoconnect({
+        self.glade.connect_signals({
             "on_button_file_clicked": self._on_button_file_clicked,
             "on_button_url_clicked": self._on_button_url_clicked,
             "on_button_hash_clicked": self._on_button_hash_clicked,
