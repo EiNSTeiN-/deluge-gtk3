@@ -56,7 +56,8 @@ class MenuBar(component.Component):
         self.config = ConfigManager("gtkui.conf")
 
         # Get the torrent menu from the glade file
-        self.torrentmenu_glade = gtk.glade.XML(
+        self.torrentmenu_glade = gtk.Builder()
+        self.torrentmenu_glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                                 "glade/torrent_menu.glade"))
 
@@ -146,7 +147,7 @@ class MenuBar(component.Component):
             "on_menuitem_sidebar_trackers_toggled":self.on_menuitem_sidebar_trackers_toggled
         })
 
-        self.torrentmenu_glade.signal_autoconnect({
+        self.torrentmenu_glade.connect_signals({
             ## Torrent Menu
             "on_menuitem_pause_activate": self.on_menuitem_pause_activate,
             "on_menuitem_resume_activate": self.on_menuitem_resume_activate,
