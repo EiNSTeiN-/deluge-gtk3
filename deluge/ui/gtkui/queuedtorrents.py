@@ -36,7 +36,7 @@
 import base64
 import os.path
 
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 import gobject
 import pkg_resources
 
@@ -55,7 +55,8 @@ class QueuedTorrents(component.Component):
         self.status_item = None
 
         self.config = ConfigManager("gtkui.conf")
-        self.glade = gtk.glade.XML(
+        self.glade = gtk.Builder()
+        self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "glade/queuedtorrents.glade"))
         self.glade.get_widget("chk_autoadd").set_active(
@@ -63,7 +64,7 @@ class QueuedTorrents(component.Component):
         self.dialog = self.glade.get_widget("queued_torrents_dialog")
         self.dialog.set_icon(common.get_logo(32))
 
-        self.glade.signal_autoconnect({
+        self.glade.connect_signals({
             "on_button_remove_clicked": self.on_button_remove_clicked,
             "on_button_clear_clicked": self.on_button_clear_clicked,
             "on_button_close_clicked": self.on_button_close_clicked,
