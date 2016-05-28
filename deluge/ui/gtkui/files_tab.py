@@ -34,7 +34,7 @@
 #
 
 
-import gtk, gtk.glade, gtk.gdk
+import gtk, gtk.gdk
 import gobject
 import gettext
 import os.path

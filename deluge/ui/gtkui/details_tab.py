@@ -34,7 +34,7 @@
 #
 
 
-import gtk, gtk.glade
+import gtk
 
 from deluge.ui.client import client
 import deluge.component as component

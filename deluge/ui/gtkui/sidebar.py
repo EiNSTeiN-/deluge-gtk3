@@ -36,7 +36,6 @@
 
 
 import gtk
-import gtk.glade
 
 import deluge.component as component
 import deluge.common
@@ -109,5 +108,3 @@ class SideBar(component.Component):
             self.notebook.set_show_tabs(False)
         else:
             self.notebook.set_show_tabs(True)
-
-

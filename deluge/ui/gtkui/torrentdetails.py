@@ -36,7 +36,7 @@
 
 """The torrent details component shows info about the selected torrent."""
 
-import gtk, gtk.glade
+import gtk
 import os
 import os.path
 import cPickle
