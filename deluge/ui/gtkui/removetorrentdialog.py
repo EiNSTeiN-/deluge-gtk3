@@ -33,7 +33,7 @@
 #
 #
 
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 import pkg_resources
 
 from deluge.ui.client import client
@@ -60,7 +60,8 @@ class RemoveTorrentDialog(object):
 
         self.__torrent_ids = torrent_ids
 
-        glade = gtk.glade.XML(
+        glade = gtk.Builder()
+        glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
                 "glade/remove_torrent_dialog.glade"))
 
