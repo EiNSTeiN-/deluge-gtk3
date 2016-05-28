@@ -53,7 +53,7 @@ class ToolBar(component.Component):
         self.toolbar = self.window.main_glade.get_widget("toolbar")
         self.config = ConfigManager("gtkui.conf")
         ### Connect Signals ###
-        self.window.main_glade.signal_autoconnect({
+        self.window.insert_signals({
             "on_toolbutton_add_clicked": self.on_toolbutton_add_clicked,
             "on_toolbutton_remove_clicked": self.on_toolbutton_remove_clicked,
             "on_toolbutton_pause_clicked": self.on_toolbutton_pause_clicked,

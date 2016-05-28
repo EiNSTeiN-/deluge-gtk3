@@ -41,7 +41,8 @@ from deluge.ui.gtkui.torrentdetails import Tab
 class OptionsTab(Tab):
     def __init__(self):
         Tab.__init__(self)
-        glade = component.get("MainWindow").get_glade()
+        window = component.get("MainWindow")
+        glade = window.get_glade()
 
         self._name = "Options"
         self._child_widget = glade.get_widget("options_tab")
@@ -64,7 +65,7 @@ class OptionsTab(Tab):
         self.prev_torrent_id = None
         self.prev_status = None
 
-        glade.signal_autoconnect({
+        window.insert_signals({
             "on_button_apply_clicked": self._on_button_apply_clicked,
             "on_button_edit_trackers_clicked": self._on_button_edit_trackers_clicked,
             "on_chk_move_completed_toggled": self._on_chk_move_completed_toggled,

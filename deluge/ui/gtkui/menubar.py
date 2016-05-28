@@ -115,7 +115,7 @@ class MenuBar(component.Component):
 
 
         ### Connect Signals ###
-        self.window.main_glade.signal_autoconnect({
+        self.window.insert_signals({
             ## File Menu
             "on_menuitem_addtorrent_activate": \
                                         self.on_menuitem_addtorrent_activate,

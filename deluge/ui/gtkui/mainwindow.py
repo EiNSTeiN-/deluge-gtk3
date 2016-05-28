@@ -36,7 +36,7 @@
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 import gobject
 import pkg_resources
 from hashlib import sha1 as sha
@@ -66,9 +66,12 @@ class MainWindow(component.Component):
         component.Component.__init__(self, "MainWindow", interval=2)
         self.config = ConfigManager("gtkui.conf")
         # Get the glade file for the main window
-        self.main_glade = gtk.glade.XML(
+        self.main_glade = gtk.Builder()
+        self.main_glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                                     "glade/main_window.glade"))
+
+        self.window_signals = {}
 
         self.window = self.main_glade.get_widget("main_window")
 
@@ -100,6 +103,9 @@ class MainWindow(component.Component):
         client.register_event_handler("NewVersionAvailableEvent", self.on_newversionavailable_event)
         client.register_event_handler("TorrentFinishedEvent", self.on_torrentfinished_event)
 
+    def insert_signals(self, signals):
+        self.window_signals.update(signals)
+
     def first_show(self):
         if not(self.config["start_in_tray"] and \
                self.config["enable_system_tray"]) and not \
@@ -117,6 +123,7 @@ class MainWindow(component.Component):
             component.resume("TorrentDetails")
         except:
             pass
+        self.main_glade.connect_signals(self.window_signals)
         self.window.show()
 
     def hide(self):

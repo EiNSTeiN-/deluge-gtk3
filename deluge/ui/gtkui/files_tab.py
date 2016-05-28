@@ -104,7 +104,8 @@ def cell_progress(column, cell, model, row, data):
 class FilesTab(Tab):
     def __init__(self):
         Tab.__init__(self)
-        glade = component.get("MainWindow").get_glade()
+        window = component.get("MainWindow")
+        glade = window.get_glade()
 
         self._name = "Files"
         self._child_widget = glade.get_widget("files_tab")
@@ -214,7 +215,7 @@ class FilesTab(Tab):
         self.listview.connect("drag_data_get", self._on_drag_data_get_data)
         self.listview.connect("drag_data_received", self._on_drag_data_received_data)
 
-        glade.signal_autoconnect({
+        window.insert_signals({
             "on_menuitem_open_file_activate": self._on_menuitem_open_file_activate,
             "on_menuitem_donotdownload_activate": self._on_menuitem_donotdownload_activate,
             "on_menuitem_normal_activate": self._on_menuitem_normal_activate,

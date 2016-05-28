@@ -59,13 +59,14 @@ def cell_data_progress(column, cell, model, row, data):
 class PeersTab(Tab):
     def __init__(self):
         Tab.__init__(self)
-        glade = component.get("MainWindow").get_glade()
+        window = component.get("MainWindow")
+        glade = window.get_glade()
 
         self._name = "Peers"
         self._child_widget = glade.get_widget("peers_tab")
         self._tab_label = glade.get_widget("peers_tab_label")
         self.peer_menu = glade.get_widget("menu_peer_tab")
-        glade.signal_autoconnect({
+        window.insert_signals({
             "on_menuitem_add_peer_activate": self._on_menuitem_add_peer_activate,
             })
 
