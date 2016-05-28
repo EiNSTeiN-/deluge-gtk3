@@ -63,7 +63,7 @@ class RemoveTorrentDialog(object):
         glade = gtk.Builder()
         glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
-                "glade/remove_torrent_dialog.glade"))
+                "builder/remove_torrent_dialog.ui"))
 
         self.__dialog = glade.get_object("remove_torrent_dialog")
         self.__dialog.set_transient_for(component.get("MainWindow").window)

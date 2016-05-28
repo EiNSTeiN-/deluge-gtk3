@@ -54,7 +54,7 @@ class Preferences(component.Component):
         self.glade = gtk.Builder()
         self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
-                                            "glade/preferences_dialog.glade"))
+                                            "builder/preferences_dialog.ui"))
         self.pref_dialog = self.glade.get_object("pref_dialog")
         self.pref_dialog.set_transient_for(component.get("MainWindow").window)
         self.pref_dialog.set_icon(common.get_deluge_icon())

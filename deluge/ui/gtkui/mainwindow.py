@@ -69,7 +69,7 @@ class MainWindow(component.Component):
         self.main_glade = gtk.Builder()
         self.main_glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
-                                                    "glade/main_window.glade"))
+                                                    "builder/main_window.ui"))
 
         self.window_signals = {}
 

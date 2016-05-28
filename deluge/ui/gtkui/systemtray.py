@@ -88,7 +88,7 @@ class SystemTray(component.Component):
         self.tray_glade = gtk.Builder()
         self.tray_glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
-                                            "glade/tray_menu.glade"))
+                                            "builder/tray_menu.ui"))
 
         self.tray_glade.connect_signals({
             "on_menuitem_show_deluge_activate": \

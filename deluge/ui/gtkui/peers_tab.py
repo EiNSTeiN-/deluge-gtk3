@@ -382,7 +382,7 @@ class PeersTab(Tab):
         dialog_glade = gtk.Builder()
         dialog_glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
-                "glade/dgtkpopups.glade"))
+                "builder/dgtkpopups.ui"))
         peer_dialog = dialog_glade.get_object("connect_peer_dialog")
         txt_ip = dialog_glade.get_object("txt_ip")
         response = peer_dialog.run()

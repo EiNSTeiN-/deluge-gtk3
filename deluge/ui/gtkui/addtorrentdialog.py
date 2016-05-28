@@ -64,7 +64,7 @@ class AddTorrentDialog(component.Component):
         self.glade = gtk.Builder()
         self.glade.add_from_file(
             pkg_resources.resource_filename(
-                "deluge.ui.gtkui", "glade/add_torrent_dialog.glade"))
+                "deluge.ui.gtkui", "builder/add_torrent_dialog.ui"))
 
         self.dialog = self.glade.get_object("dialog_add_torrent")
 

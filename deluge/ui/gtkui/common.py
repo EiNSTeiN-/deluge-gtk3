@@ -156,7 +156,7 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
     glade = gtk.Builder()
     glade.add_from_file(
         pkg_resources.resource_filename("deluge.ui.gtkui",
-                                    "glade/dgtkpopups.glade"))
+                                    "builder/dgtkpopups.ui"))
     dialog = glade.get_object("other_dialog")
     dialog.set_transient_for(component.get("MainWindow").window)
     dialog.set_title("")

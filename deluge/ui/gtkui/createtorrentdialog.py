@@ -56,7 +56,7 @@ class CreateTorrentDialog:
         self.glade.add_from_file(
             pkg_resources.resource_filename(
                 "deluge.ui.gtkui",
-                "glade/create_torrent_dialog.glade"))
+                "builder/create_torrent_dialog.ui"))
 
         self.config = ConfigManager("gtkui.conf")
 

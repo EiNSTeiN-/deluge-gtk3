@@ -122,7 +122,7 @@ class ConnectionManager(component.Component):
         self.glade = gtk.Builder()
         self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
-                                            "glade/connection_manager.glade"))
+                                            "builder/connection_manager.ui"))
         self.window = component.get("MainWindow")
 
         # Setup the ConnectionManager dialog

@@ -110,7 +110,7 @@ class FilterTreeView(component.Component):
         #menu
         glade_menu = gtk.Builder()
         glade_menu.add_from_file(pkg_resources.resource_filename("deluge.ui.gtkui",
-            "glade/filtertree_menu.glade"))
+            "builder/filtertree_menu.ui"))
         self.menu = glade_menu.get_object("filtertree_menu")
         glade_menu.connect_signals({
             "select_all": self.on_select_all,

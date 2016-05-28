@@ -49,7 +49,7 @@ class EditTrackersDialog:
         self.glade = gtk.Builder()
         self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
-                                            "glade/edit_trackers.glade"))
+                                            "builder/edit_trackers.ui"))
 
         self.dialog = self.glade.get_object("edit_trackers_dialog")
         self.treeview = self.glade.get_object("tracker_treeview")

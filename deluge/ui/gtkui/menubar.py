@@ -59,7 +59,7 @@ class MenuBar(component.Component):
         self.torrentmenu_glade = gtk.Builder()
         self.torrentmenu_glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
-                                                "glade/torrent_menu.glade"))
+                                                "builder/torrent_menu.ui"))
 
         self.torrentmenu_glade.get_object("menuitem_queue").set_submenu(
             self.torrentmenu_glade.get_object("queue_torrent_menu"))
@@ -340,7 +340,7 @@ class MenuBar(component.Component):
         log.debug("show_move_storage_dialog")
         glade = gtk.Builder()
         glade.add_from_file(pkg_resources.resource_filename(
-            "deluge.ui.gtkui", "glade/move_storage_dialog.glade"
+            "deluge.ui.gtkui", "builder/move_storage_dialog.ui"
         ))
         # Keep it referenced:
         #  https://bugzilla.gnome.org/show_bug.cgi?id=546802
