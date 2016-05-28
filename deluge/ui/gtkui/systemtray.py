@@ -38,7 +38,7 @@ try:
 except ImportError:
     appindicator = None
 
-import gtk
+from gi.repository import Gtk
 import pkg_resources
 
 import deluge.component as component
@@ -85,7 +85,7 @@ class SystemTray(component.Component):
 
     def enable(self):
         """Enables the system tray icon."""
-        self.tray_glade = gtk.Builder()
+        self.tray_glade = Gtk.Builder()
         self.tray_glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "builder/tray_menu.ui"))
@@ -132,13 +132,14 @@ class SystemTray(component.Component):
         else:
             log.debug("Enabling the system tray icon..")
             if deluge.common.windows_check() or deluge.common.osx_check():
-                self.tray = gtk.status_icon_new_from_pixbuf(
+                self.tray = Gtk.StatusIcon.new_from_pixbuf(
                     common.get_logo(32))
             else:
                 try:
-                    self.tray = gtk.status_icon_new_from_icon_name("deluge")
+                    self.tray = Gtk.StatusIcon.new_from_icon_name("deluge")
                 except:
                     log.warning("Update PyGTK to 2.10 or greater for SystemTray..")
+                    self.tray = None
                     return
 
             self.tray.connect("activate", self.on_tray_clicked)
@@ -260,7 +261,7 @@ class SystemTray(component.Component):
             max_download_speed, _("Up"), self.upload_rate, max_upload_speed)
 
         # Set the tooltip
-        self.tray.set_tooltip(msg)
+        self.tray.set_tooltip_text(msg)
 
         self.send_status_request()
 
@@ -350,7 +351,7 @@ class SystemTray(component.Component):
         else:
             self.tray_glade.get_object("menuitem_show_deluge").set_active(False)
 
-        popup_function = gtk.status_icon_position_menu
+        popup_function = Gtk.status_icon_position_menu
         if deluge.common.windows_check():
             popup_function = None
             button = 0
@@ -385,7 +386,7 @@ class SystemTray(component.Component):
         self.window.quit(shutdown=True)
 
     def on_tray_setbwdown(self, widget, data=None):
-        if isinstance(widget, gtk.RadioMenuItem):
+        if isinstance(widget, Gtk.RadioMenuItem):
             #ignore previous radiomenuitem value
             if not widget.get_active():
                 return
@@ -393,7 +394,7 @@ class SystemTray(component.Component):
             "tray_download_speed_list", self.max_download_speed, "downloading.svg")
 
     def on_tray_setbwup(self, widget, data=None):
-        if isinstance(widget, gtk.RadioMenuItem):
+        if isinstance(widget, Gtk.RadioMenuItem):
             #ignore previous radiomenuitem value
             if not widget.get_active():
                 return

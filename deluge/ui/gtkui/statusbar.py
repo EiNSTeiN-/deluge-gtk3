@@ -34,8 +34,8 @@
 #
 
 
-import gtk
-import gobject
+from gi.repository import Gtk
+from gi.repository import GObject
 
 from deluge.ui.client import client
 import deluge.component as component
@@ -47,11 +47,11 @@ from deluge.log import LOG as log
 class StatusBarItem:
     def __init__(self, image=None, stock=None, text=None, callback=None, tooltip=None):
         self._widgets = []
-        self._ebox = gtk.EventBox()
-        self._hbox = gtk.HBox()
+        self._ebox = Gtk.EventBox()
+        self._hbox = Gtk.HBox()
         self._hbox.set_spacing(5)
-        self._image = gtk.Image()
-        self._label = gtk.Label()
+        self._image = Gtk.Image()
+        self._label = Gtk.Label()
         self._hbox.add(self._image)
         self._hbox.add(self._label)
         self._ebox.add(self._hbox)
@@ -88,7 +88,7 @@ class StatusBarItem:
         self._image.set_from_file(image)
 
     def set_image_from_stock(self, stock):
-        self._image.set_from_stock(stock, gtk.ICON_SIZE_MENU)
+        self._image.set_from_stock(stock, Gtk.IconSize.MENU)
 
     def set_text(self, text):
         if self._label.get_text() != text:
@@ -135,7 +135,7 @@ class StatusBar(component.Component):
         }
         self.current_warnings = []
         # Add a HBox to the statusbar after removing the initial label widget
-        self.hbox = gtk.HBox()
+        self.hbox = Gtk.HBox()
         self.hbox.set_spacing(10)
         frame = self.statusbar.get_children()[0]
         frame.remove(frame.get_children()[0])
@@ -143,7 +143,7 @@ class StatusBar(component.Component):
         self.statusbar.show_all()
         # Create the not connected item
         self.not_connected_item = StatusBarItem(
-            stock=gtk.STOCK_STOP, text=_("Not Connected"),
+            stock=Gtk.STOCK_STOP, text=_("Not Connected"),
             callback=self._on_notconnected_item_clicked)
         # Show the not connected status bar
         self.show_not_connected()
@@ -158,7 +158,7 @@ class StatusBar(component.Component):
         self.remove_item(self.not_connected_item)
 
         self.connections_item = self.add_item(
-            stock=gtk.STOCK_NETWORK,
+            stock=Gtk.STOCK_NETWORK,
             callback=self._on_connection_item_clicked,
             tooltip=_("Connections"))
 
@@ -181,12 +181,12 @@ class StatusBar(component.Component):
             image=deluge.common.get_pixmap("dht16.png"), tooltip=_("DHT Nodes"))
 
         self.diskspace_item = self.add_item(
-                stock=gtk.STOCK_HARDDISK,
+                stock=Gtk.STOCK_HARDDISK,
                 callback=self._on_diskspace_item_clicked,
                 tooltip=_("Free Disk Space"))
 
         self.health_item = self.add_item(
-                stock=gtk.STOCK_DIALOG_ERROR,
+                stock=Gtk.STOCK_DIALOG_ERROR,
                 text=_("No Incoming Connections!"),
                 callback=self._on_health_icon_clicked)
 
@@ -228,13 +228,13 @@ class StatusBar(component.Component):
 
     def show_not_connected(self):
         self.hbox.pack_start(
-            self.not_connected_item.get_eventbox(), expand=False, fill=False)
+            self.not_connected_item.get_eventbox(), True, True, 0)
 
     def add_item(self, image=None, stock=None, text=None, callback=None, tooltip=None):
         """Adds an item to the status bar"""
         # The return tuple.. we return whatever widgets we add
         item = StatusBarItem(image, stock, text, callback, tooltip)
-        self.hbox.pack_start(item.get_eventbox(), expand=False, fill=False)
+        self.hbox.pack_start(item.get_eventbox(), True, True, 0)
         return item
 
     def remove_item(self, item):
@@ -249,15 +249,15 @@ class StatusBar(component.Component):
         """Adds an item to the StatusBar for seconds"""
         item = self.add_item(image, stock, text, callback)
         # Start a timer to remove this item in seconds
-        gobject.timeout_add(seconds * 1000, self.remove_item, item)
+        GObject.timeout_add(seconds * 1000, self.remove_item, item)
 
     def display_warning(self, text, callback=None):
         """Displays a warning to the user in the status bar"""
         if text not in self.current_warnings:
             item = self.add_item(
-                stock=gtk.STOCK_DIALOG_WARNING, text=text, callback=callback)
+                stock=Gtk.STOCK_DIALOG_WARNING, text=text, callback=callback)
             self.current_warnings.append(text)
-            gobject.timeout_add(3000, self.remove_warning, item)
+            GObject.timeout_add(3000, self.remove_warning, item)
 
     def remove_warning(self, item):
         self.current_warnings.remove(item.get_text())
@@ -307,7 +307,7 @@ class StatusBar(component.Component):
         self.dht_status = value
         if value:
             self.hbox.pack_start(
-                self.dht_item.get_eventbox(), expand=False, fill=False)
+                self.dht_item.get_eventbox(), True, True, 0)
             self.send_status_request()
         else:
             self.remove_item(self.dht_item)
@@ -389,7 +389,7 @@ class StatusBar(component.Component):
             self.max_download_speed,
             _("KiB/s"), show_notset=True, show_other=True)
         menu.show_all()
-        menu.popup(None, None, None, event.button, event.time)
+        menu.popup(None, None, None, menu.show_all, event.button, event.time)
 
     def _on_set_download_speed(self, widget):
         log.debug("_on_set_download_speed")
@@ -417,7 +417,7 @@ class StatusBar(component.Component):
             self.max_upload_speed,
             _("KiB/s"), show_notset=True, show_other=True)
         menu.show_all()
-        menu.popup(None, None, None, event.button, event.time)
+        menu.popup(None, None, None, menu.show_all, event.button, event.time)
 
     def _on_set_upload_speed(self, widget):
         log.debug("_on_set_upload_speed")
@@ -444,7 +444,7 @@ class StatusBar(component.Component):
             self._on_set_connection_limit,
             self.max_connections, show_notset=True, show_other=True)
         menu.show_all()
-        menu.popup(None, None, None, event.button, event.time)
+        menu.popup(None, None, None, menu.show_all, event.button, event.time)
 
     def _on_set_connection_limit(self, widget):
         log.debug("_on_set_connection_limit")
@@ -453,7 +453,7 @@ class StatusBar(component.Component):
             value = -1
         elif widget.get_name() == "other":
             value = common.show_other_dialog(
-                _("Set Maximum Connections"), "", gtk.STOCK_NETWORK, None, self.max_connections)
+                _("Set Maximum Connections"), "", Gtk.STOCK_NETWORK, None, self.max_connections)
             if value == None:
                 return
         else:

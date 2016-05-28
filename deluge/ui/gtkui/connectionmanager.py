@@ -33,7 +33,7 @@
 #
 #
 
-import gtk
+from gi.repository import Gtk
 import pkg_resources
 import urlparse
 import time
@@ -108,7 +108,7 @@ class ConnectionManager(component.Component):
     def stop(self):
         # Close this dialog when we are shutting down
         if self.running:
-            self.connection_manager.response(gtk.RESPONSE_CLOSE)
+            self.connection_manager.response(Gtk.ResponseType.CLOSE)
 
     def shutdown(self):
         pass
@@ -119,7 +119,7 @@ class ConnectionManager(component.Component):
         Show the ConnectionManager dialog.
         """
         # Get the glade file for the connection manager
-        self.glade = gtk.Builder()
+        self.glade = Gtk.Builder()
         self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "builder/connection_manager.ui"))
@@ -137,26 +137,26 @@ class ConnectionManager(component.Component):
 
         # Create status pixbufs
         if not HOSTLIST_PIXBUFS:
-            for stock_id in (gtk.STOCK_NO, gtk.STOCK_YES, gtk.STOCK_CONNECT):
-                HOSTLIST_PIXBUFS.append(self.connection_manager.render_icon(stock_id, gtk.ICON_SIZE_MENU))
+            for stock_id in (Gtk.STOCK_NO, Gtk.STOCK_YES, Gtk.STOCK_CONNECT):
+                HOSTLIST_PIXBUFS.append(self.connection_manager.render_icon(stock_id, Gtk.IconSize.MENU))
 
         # Create the host list gtkliststore
         # id-hash, hostname, port, status, username, password, version
-        self.liststore = gtk.ListStore(str, str, int, str, str, str, str)
+        self.liststore = Gtk.ListStore(str, str, int, str, str, str, str)
 
         # Setup host list treeview
         self.hostlist.set_model(self.liststore)
-        render = gtk.CellRendererPixbuf()
-        column = gtk.TreeViewColumn(_("Status"), render)
+        render = Gtk.CellRendererPixbuf()
+        column = Gtk.TreeViewColumn(_("Status"), render)
         column.set_cell_data_func(render, cell_render_status, 3)
         self.hostlist.append_column(column)
-        render = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("Host"), render, text=HOSTLIST_COL_HOST)
+        render = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_("Host"), render, text=HOSTLIST_COL_HOST)
         column.set_cell_data_func(render, cell_render_host, (1, 2, 4))
         column.set_expand(True)
         self.hostlist.append_column(column)
-        render = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("Version"), render, text=HOSTLIST_COL_VERSION)
+        render = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_("Version"), render, text=HOSTLIST_COL_VERSION)
         self.hostlist.append_column(column)
 
         # Load any saved host entries
@@ -347,7 +347,7 @@ class ConnectionManager(component.Component):
             self.glade.get_object("button_connect").set_sensitive(False)
             self.glade.get_object("button_removehost").set_sensitive(False)
             self.glade.get_object("image_startdaemon").set_from_stock(
-                gtk.STOCK_EXECUTE, gtk.ICON_SIZE_MENU)
+                Gtk.STOCK_EXECUTE, Gtk.IconSize.MENU)
             self.glade.get_object("label_startdaemon").set_text("_Start Daemon")
 
         model, row = self.hostlist.get_selection().get_selected()
@@ -382,7 +382,7 @@ class ConnectionManager(component.Component):
         # Check to see if the host is online
         if status == "Connected" or status == "Online":
             self.glade.get_object("image_startdaemon").set_from_stock(
-                gtk.STOCK_STOP, gtk.ICON_SIZE_MENU)
+                Gtk.STOCK_STOP, Gtk.IconSize.MENU)
             self.glade.get_object("label_startdaemon").set_text(
                 _("_Stop Daemon"))
 
@@ -390,7 +390,7 @@ class ConnectionManager(component.Component):
         if localhost and status == "Offline":
             # The localhost is not online
             self.glade.get_object("image_startdaemon").set_from_stock(
-                gtk.STOCK_EXECUTE, gtk.ICON_SIZE_MENU)
+                Gtk.STOCK_EXECUTE, Gtk.IconSize.MENU)
             self.glade.get_object("label_startdaemon").set_text(
                 _("_Start Daemon"))
 
@@ -483,16 +483,16 @@ that you forgot to install the deluged package or it's not in your PATH.")).run(
         else:
             do_connect()
 
-        self.connection_manager.response(gtk.RESPONSE_OK)
+        self.connection_manager.response(Gtk.ResponseType.OK)
 
     def on_button_close_clicked(self, widget):
-        self.connection_manager.response(gtk.RESPONSE_CLOSE)
+        self.connection_manager.response(Gtk.ResponseType.CLOSE)
 
     def on_button_addhost_clicked(self, widget):
         log.debug("on_button_addhost_clicked")
         dialog = self.glade.get_object("addhost_dialog")
         dialog.set_transient_for(self.connection_manager)
-        dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
+        dialog.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
         hostname_entry = self.glade.get_object("entry_hostname")
         port_spinbutton = self.glade.get_object("spinbutton_port")
         username_entry = self.glade.get_object("entry_username")

@@ -128,7 +128,7 @@ class SessionProxy(component.Component):
         :rtype: dict
 
         """
-        if torrent_id in self.torrents:
+        if torrent_id in self.torrents.keys():
             # Keep track of keys we need to request from the core
             keys_to_get = []
             if not keys:

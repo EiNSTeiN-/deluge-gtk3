@@ -35,7 +35,7 @@
 #
 
 
-import gtk
+from gi.repository import Gtk, GdkPixbuf
 import pkg_resources
 import warnings
 from gobject import GError
@@ -101,14 +101,14 @@ class FilterTreeView(component.Component):
         self.config = ConfigManager("gtkui.conf")
         self.tracker_icons = component.get("TrackerIcons")
 
-        self.label_view = gtk.TreeView()
+        self.label_view = Gtk.TreeView()
         self.sidebar.add_tab(self.label_view, "filters", "Filters")
 
         #set filter to all when hidden:
         self.sidebar.notebook.connect("hide", self._on_hide)
 
         #menu
-        glade_menu = gtk.Builder()
+        glade_menu = Gtk.Builder()
         glade_menu.add_from_file(pkg_resources.resource_filename("deluge.ui.gtkui",
             "builder/filtertree_menu.ui"))
         self.menu = glade_menu.get_object("filtertree_menu")
@@ -122,17 +122,17 @@ class FilterTreeView(component.Component):
 
         # Create the liststore
         #cat, value, label, count, pixmap, visible
-        self.treestore = gtk.TreeStore(str, str, str, int, gtk.gdk.Pixbuf, bool)
+        self.treestore = Gtk.TreeStore(str, str, str, int, GdkPixbuf.Pixbuf, bool)
 
         # Create the column
-        column = gtk.TreeViewColumn("Filters")
-        column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
-        render = gtk.CellRendererPixbuf()
+        column = Gtk.TreeViewColumn("Filters")
+        column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+        render = Gtk.CellRendererPixbuf()
         self.renderpix = render
-        column.pack_start(render, expand=False)
+        column.pack_start(render, False)
         column.add_attribute(render, 'pixbuf', 4)
-        render = gtk.CellRendererText()
-        column.pack_start(render, expand=False)
+        render = Gtk.CellRendererText()
+        column.pack_start(render, False)
         column.set_cell_data_func(render, self.render_cell_data,None)
 
         self.label_view.append_column(column)
@@ -140,10 +140,9 @@ class FilterTreeView(component.Component):
         #style:
         self.label_view.set_show_expanders(True)
         self.label_view.set_headers_visible(False)
-        self.label_view.set_level_indentation(-35)
         # Force the theme to use an expander-size of 15 so that we don't cut out
         # entries due to our indentation hack.
-        gtk.rc_parse_string('style "treeview-style" { GtkTreeView::expander-size = 15 } class "GtkTreeView" style "treeview-style"')
+        Gtk.rc_parse_string('style "treeview-style" { GtkTreeView::expander-size = 15 } class "GtkTreeView" style "treeview-style"')
 
         self.label_view.set_model(self.treestore)
         self.label_view.get_selection().connect("changed", self.on_selection_changed)
@@ -153,9 +152,9 @@ class FilterTreeView(component.Component):
         self.label_view.connect("button-press-event", self.on_button_press_event)
 
         #colors using current theme.
-        style = self.window.window.get_style()
-        self.colour_background = style.bg[gtk.STATE_NORMAL]
-        self.colour_foreground = style.fg[gtk.STATE_NORMAL]
+        style_ctx = self.window.window.get_style_context()
+        self.colour_background = style_ctx.get_background_color(Gtk.StateFlags.NORMAL)
+        self.colour_foreground = style_ctx.get_color(Gtk.StateFlags.NORMAL)
 
     def start(self):
         #add Cat nodes:
@@ -273,8 +272,8 @@ class FilterTreeView(component.Component):
 
         if cat == "cat":
             txt = label
-            cell.set_property("cell-background-gdk", self.colour_background)
-            cell.set_property("foreground-gdk", self.colour_foreground)
+            cell.set_property("cell-background-gdk", self.colour_background.to_color())
+            cell.set_property("foreground-gdk", self.colour_foreground.to_color())
         else:
             txt = "%s (%s)"  % (label, count)
             cell.set_property("cell-background", None)
@@ -291,20 +290,20 @@ class FilterTreeView(component.Component):
 
         if pix:
             try:
-                return gtk.gdk.pixbuf_new_from_file(deluge.common.get_pixmap("%s16.png" % pix))
+                return GdkPixbuf.Pixbuf.new_from_file(deluge.common.get_pixmap("%s16.png" % pix))
             except GError, e:
                 log.warning(e)
         return self.get_transparent_pix(16, 16)
 
     def get_transparent_pix(self,  width, height):
-        pix = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, True, 8, width, height)
+        pix = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, width, height)
         pix.fill(0x0000000)
         return pix
 
     def set_row_image(self, cat, value, filename):
         pix = None
         try: #assume we could get trashed images here..
-            pix = gtk.gdk.pixbuf_new_from_file_at_size(filename, 16, 16)
+            pix = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 16, 16)
         except Exception, e:
             log.debug(e)
 

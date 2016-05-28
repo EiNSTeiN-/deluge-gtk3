@@ -34,17 +34,19 @@
 #
 
 
-import pygtk
-pygtk.require('2.0')
-import gtk
-import gobject
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version('Wnck', '3.0')
+from gi.repository import Gtk, Gdk
+from gi.repository import GObject
 import pkg_resources
 from hashlib import sha1 as sha
 
 try:
-    import wnck
+    from gi.repository import Wnck
+    import Wnck.Window
 except ImportError:
-    wnck = None
+    Wnck = None
 
 from deluge.ui.client import client
 import deluge.component as component
@@ -61,12 +63,12 @@ from deluge.log import LOG as log
 
 class MainWindow(component.Component):
     def __init__(self):
-        if wnck:
-            self.screen = wnck.screen_get_default()
+        if Wnck:
+            self.screen = Wnck.Screen.get_default()
         component.Component.__init__(self, "MainWindow", interval=2)
         self.config = ConfigManager("gtkui.conf")
         # Get the glade file for the main window
-        self.main_glade = gtk.Builder()
+        self.main_glade = Gtk.Builder()
         self.main_glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                                     "builder/main_window.ui"))
@@ -87,8 +89,8 @@ class MainWindow(component.Component):
         # UI when it is minimized.
         self.is_minimized = False
 
-        self.window.drag_dest_set(gtk.DEST_DEFAULT_ALL, [('text/uri-list', 0,
-            80)], gtk.gdk.ACTION_COPY)
+        self.window.drag_dest_set(Gtk.DestDefaults.ALL, [Gtk.TargetEntry.new('text/uri-list', 0,
+            80)], Gdk.DragAction.COPY)
 
         # Connect events
         self.window.connect("window-state-event", self.on_window_state_event)
@@ -96,7 +98,7 @@ class MainWindow(component.Component):
         self.window.connect("delete-event", self.on_window_delete_event)
         self.window.connect("drag-data-received", self.on_drag_data_received_event)
         self.vpaned.connect("notify::position", self.on_vpaned_position_event)
-        self.window.connect("expose-event", self.on_expose_event)
+        self.window.connect("draw", self.on_expose_event)
 
         self.config.register_set_function("show_rate_in_title", self._on_set_show_rate_in_title, apply_now=False)
 
@@ -112,8 +114,8 @@ class MainWindow(component.Component):
                 self.window.get_property("visible"):
             log.debug("Showing window")
             self.show()
-            while gtk.events_pending():
-                gtk.main_iteration(False)
+            while Gtk.events_pending():
+                Gtk.main_iteration()
             self.vpaned.set_position(self.initial_vpaned_position)
 
     def show(self):
@@ -161,7 +163,7 @@ class MainWindow(component.Component):
         if self.config["lock_tray"] and not self.visible():
             dialog = PasswordDialog(_("Enter your password to show Deluge..."))
             def on_dialog_response(response_id):
-                if response_id == gtk.RESPONSE_OK:
+                if response_id == Gtk.ResponseType.OK:
                     if self.config["tray_password"] == sha(dialog.get_password()).hexdigest():
                         restore()
             dialog.run().addCallback(on_dialog_response)
@@ -216,7 +218,7 @@ class MainWindow(component.Component):
         if self.config["lock_tray"] and not self.visible():
             dialog = PasswordDialog(_("Enter your password to Quit Deluge..."))
             def on_dialog_response(response_id):
-                if response_id == gtk.RESPONSE_OK:
+                if response_id == Gtk.ResponseType.OK:
                     if self.config["tray_password"] == sha(dialog.get_password()).hexdigest():
                         quit_gtkui()
             dialog.run().addCallback(on_dialog_response)
@@ -241,14 +243,14 @@ class MainWindow(component.Component):
             self.config["window_height"] = event.height
 
     def on_window_state_event(self, widget, event):
-        if event.changed_mask & gtk.gdk.WINDOW_STATE_MAXIMIZED:
-            if event.new_window_state & gtk.gdk.WINDOW_STATE_MAXIMIZED:
+        if event.changed_mask & Gdk.WindowState.MAXIMIZED:
+            if event.new_window_state & Gdk.WindowState.MAXIMIZED:
                 log.debug("pos: %s", self.window.get_position())
                 self.config["window_maximized"] = True
-            elif not event.new_window_state & gtk.gdk.WINDOW_STATE_WITHDRAWN:
+            elif not event.new_window_state & Gdk.WindowState.WITHDRAWN:
                 self.config["window_maximized"] = False
-        if event.changed_mask & gtk.gdk.WINDOW_STATE_ICONIFIED:
-            if event.new_window_state & gtk.gdk.WINDOW_STATE_ICONIFIED:
+        if event.changed_mask & Gdk.WindowState.ICONIFIED:
+            if event.new_window_state & Gdk.WindowState.ICONIFIED:
                 log.debug("MainWindow is minimized..")
                 component.pause("TorrentView")
                 component.pause("StatusBar")
@@ -319,9 +321,9 @@ class MainWindow(component.Component):
             bool: True if on active workspace (or wnck module not available), otherwise False.
 
         """
-        if wnck:
+        if Wnck:
             self.screen.force_update()
-            win = wnck.window_get(self.window.window.xid)
+            win = Wnck.Window.get(self.window.window.xid)
             if win:
                 active_wksp = win.get_screen().get_active_workspace()
                 if active_wksp:

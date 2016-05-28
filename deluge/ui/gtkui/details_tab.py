@@ -34,7 +34,7 @@
 #
 
 
-import gtk
+from gi.repository import Gtk
 
 from deluge.ui.client import client
 import deluge.component as component

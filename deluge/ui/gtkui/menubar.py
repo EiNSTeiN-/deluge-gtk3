@@ -34,9 +34,9 @@
 #
 
 
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 import pkg_resources
 
 import deluge.error
@@ -56,7 +56,7 @@ class MenuBar(component.Component):
         self.config = ConfigManager("gtkui.conf")
 
         # Get the torrent menu from the glade file
-        self.torrentmenu_glade = gtk.Builder()
+        self.torrentmenu_glade = Gtk.Builder()
         self.torrentmenu_glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                                 "builder/torrent_menu.ui"))
@@ -74,23 +74,23 @@ class MenuBar(component.Component):
 
         for menuitem in ("menuitem_down_speed", "menuitem_up_speed",
             "menuitem_max_connections", "menuitem_upload_slots"):
-            submenu = gtk.Menu()
-            item = gtk.MenuItem(_("Set Unlimited"))
+            submenu = Gtk.Menu()
+            item = Gtk.MenuItem(_("Set Unlimited"))
             item.set_name(menuitem)
             item.connect("activate", self.on_menuitem_set_unlimited)
             submenu.append(item)
-            item = gtk.MenuItem(_("Other..."))
+            item = Gtk.MenuItem(_("Other..."))
             item.set_name(menuitem)
             item.connect("activate", self.on_menuitem_set_other)
             submenu.append(item)
             submenu.show_all()
             self.torrentmenu_glade.get_object(menuitem).set_submenu(submenu)
 
-        submenu = gtk.Menu()
-        item = gtk.MenuItem(_("On"))
+        submenu = Gtk.Menu()
+        item = Gtk.MenuItem(_("On"))
         item.connect("activate", self.on_menuitem_set_automanaged_on)
         submenu.append(item)
-        item = gtk.MenuItem(_("Off"))
+        item = Gtk.MenuItem(_("Off"))
         item.connect("activate", self.on_menuitem_set_automanaged_off)
         submenu.append(item)
         submenu.show_all()
@@ -223,7 +223,7 @@ class MenuBar(component.Component):
         # Any better way than duplicating toolbar.py:update_buttons in here?
 
     def add_torrentmenu_separator(self):
-        sep = gtk.SeparatorMenuItem()
+        sep = Gtk.SeparatorMenuItem()
         self.torrentmenu.append(sep)
         sep.show()
         return sep
@@ -308,7 +308,7 @@ class MenuBar(component.Component):
     def on_menuitem_open_folder_activate(self, data=None):
         log.debug("on_menuitem_open_folder")
         def _on_torrent_status(status):
-            timestamp = gtk.get_current_event_time()
+            timestamp = Gtk.get_current_event_time()
             deluge.common.open_file(status["save_path"], timestamp=timestamp)
         for torrent_id in component.get("TorrentView").get_selected_torrents():
             component.get("SessionProxy").get_torrent_status(torrent_id, ["save_path"]).addCallback(_on_torrent_status)
@@ -318,16 +318,16 @@ class MenuBar(component.Component):
         if client.is_localhost():
             from deluge.configmanager import ConfigManager
             config = ConfigManager("gtkui.conf")
-            chooser = gtk.FileChooserDialog(_("Choose a directory to move files to"\
+            chooser = Gtk.FileChooserDialog(_("Choose a directory to move files to"\
                 ) , component.get("MainWindow").window, \
-                gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER, buttons=(gtk.STOCK_CANCEL, \
-                gtk.RESPONSE_CANCEL, gtk.STOCK_OK, gtk.RESPONSE_OK))
+                Gtk.FileChooserAction.SELECT_FOLDER, buttons=(Gtk.STOCK_CANCEL, \
+                Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK))
             chooser.set_local_only(True)
             if not deluge.common.windows_check():
                 chooser.set_icon(common.get_deluge_icon())
                 chooser.set_property("skip-taskbar-hint", True)
             chooser.set_current_folder(config["choose_directory_dialog_path"])
-            if chooser.run() == gtk.RESPONSE_OK:
+            if chooser.run() == Gtk.ResponseType.OK:
                 result = chooser.get_filename()
                 config["choose_directory_dialog_path"] = result
                 client.core.move_storage(
@@ -338,7 +338,7 @@ class MenuBar(component.Component):
 
     def show_move_storage_dialog(self, status):
         log.debug("show_move_storage_dialog")
-        glade = gtk.Builder()
+        glade = Gtk.Builder()
         glade.add_from_file(pkg_resources.resource_filename(
             "deluge.ui.gtkui", "builder/move_storage_dialog.ui"
         ))
@@ -355,7 +355,7 @@ class MenuBar(component.Component):
                 del self.move_storage_dialog
                 del self.move_storage_dialog_entry
 
-            if response_id == gtk.RESPONSE_OK:
+            if response_id == Gtk.ResponseType.OK:
                 log.debug("Moving torrents to %s",
                           self.move_storage_dialog_entry.get_text())
                 path = self.move_storage_dialog_entry.get_text()
@@ -415,19 +415,19 @@ class MenuBar(component.Component):
         AboutDialog().run()
 
     def on_menuitem_set_unlimited(self, widget):
-        log.debug("widget.name: %s", widget.name)
+        log.debug("widget.name: %s", widget.get_name())
         funcs = {
             "menuitem_down_speed": client.core.set_torrent_max_download_speed,
             "menuitem_up_speed": client.core.set_torrent_max_upload_speed,
             "menuitem_max_connections": client.core.set_torrent_max_connections,
             "menuitem_upload_slots": client.core.set_torrent_max_upload_slots
         }
-        if widget.name in funcs.keys():
+        if widget.get_name() in funcs.keys():
             for torrent in component.get("TorrentView").get_selected_torrents():
-                funcs[widget.name](torrent, -1)
+                funcs[widget.get_name()](torrent, -1)
 
     def on_menuitem_set_other(self, widget):
-        log.debug("widget.name: %s", widget.name)
+        log.debug("widget.name: %s", widget.get_name())
         funcs = {
             "menuitem_down_speed": client.core.set_torrent_max_download_speed,
             "menuitem_up_speed": client.core.set_torrent_max_upload_speed,
@@ -438,15 +438,15 @@ class MenuBar(component.Component):
         other_dialog_info = {
             "menuitem_down_speed": (_("Set Maximum Download Speed"), _("KiB/s"), None, "downloading.svg", -1.0),
             "menuitem_up_speed": (_("Set Maximum Upload Speed"), _("KiB/s"), None, "seeding.svg", -1.0),
-            "menuitem_max_connections": (_("Set Maximum Connections"), "", gtk.STOCK_NETWORK, None, -1),
-            "menuitem_upload_slots": (_("Set Maximum Upload Slots"), "", gtk.STOCK_SORT_ASCENDING, None, -1)
+            "menuitem_max_connections": (_("Set Maximum Connections"), "", Gtk.STOCK_NETWORK, None, -1),
+            "menuitem_upload_slots": (_("Set Maximum Upload Slots"), "", Gtk.STOCK_SORT_ASCENDING, None, -1)
         }
 
         # Show the other dialog
-        value = common.show_other_dialog(*other_dialog_info[widget.name])
-        if value and widget.name in funcs:
+        value = common.show_other_dialog(*other_dialog_info[widget.get_name()])
+        if value and widget.get_name() in funcs:
             for torrent in component.get("TorrentView").get_selected_torrents():
-                funcs[widget.name](torrent, value)
+                funcs[widget.get_name()](torrent, value)
 
     def on_menuitem_set_automanaged_on(self, widget):
         for torrent in component.get("TorrentView").get_selected_torrents():

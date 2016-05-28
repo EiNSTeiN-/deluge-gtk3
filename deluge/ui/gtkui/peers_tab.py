@@ -34,11 +34,11 @@
 #
 
 
-import gtk
+from gi.repository import Gtk, GdkPixbuf
 import os.path
 import cPickle
 import pkg_resources
-import gobject
+from gi.repository import GObject
 from itertools import izip
 
 from deluge.ui.client import client
@@ -75,18 +75,18 @@ class PeersTab(Tab):
         self.listview.connect("button-press-event", self._on_button_press_event)
         self.listview.connect("query-tooltip", self._on_query_tooltip)
         # country pixbuf, ip, client, downspeed, upspeed, country code, int_ip, seed/peer icon, progress
-        self.liststore = gtk.ListStore(gtk.gdk.Pixbuf, str, str, int, int, str, float, gtk.gdk.Pixbuf, float)
+        self.liststore = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, int, int, str, float, GdkPixbuf.Pixbuf, float)
         self.cached_flag_pixbufs = {}
 
-        self.seed_pixbuf = gtk.gdk.pixbuf_new_from_file(deluge.common.get_pixmap("seeding16.png"))
-        self.peer_pixbuf = gtk.gdk.pixbuf_new_from_file(deluge.common.get_pixmap("downloading16.png"))
+        self.seed_pixbuf = GdkPixbuf.Pixbuf.new_from_file(deluge.common.get_pixmap("seeding16.png"))
+        self.peer_pixbuf = GdkPixbuf.Pixbuf.new_from_file(deluge.common.get_pixmap("downloading16.png"))
 
         # key is ip address, item is row iter
         self.peers = {}
 
         # Country column
-        column = gtk.TreeViewColumn()
-        render = gtk.CellRendererPixbuf()
+        column = Gtk.TreeViewColumn()
+        render = Gtk.CellRendererPixbuf()
         column.pack_start(render, False)
         column.add_attribute(render, "pixbuf", 0)
         column.set_sort_column_id(5)
@@ -98,11 +98,11 @@ class PeersTab(Tab):
         self.listview.append_column(column)
 
         # Address column
-        column = gtk.TreeViewColumn(_("Address"))
-        render = gtk.CellRendererPixbuf()
+        column = Gtk.TreeViewColumn(_("Address"))
+        render = Gtk.CellRendererPixbuf()
         column.pack_start(render, False)
         column.add_attribute(render, "pixbuf", 7)
-        render = gtk.CellRendererText()
+        render = Gtk.CellRendererText()
         column.pack_start(render, False)
         column.add_attribute(render, "text", 1)
         column.set_sort_column_id(6)
@@ -114,8 +114,8 @@ class PeersTab(Tab):
         self.listview.append_column(column)
 
         # Client column
-        column = gtk.TreeViewColumn(_("Client"))
-        render = gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_("Client"))
+        render = Gtk.CellRendererText()
         column.pack_start(render, False)
         column.add_attribute(render, "text", 2)
         column.set_sort_column_id(2)
@@ -127,8 +127,8 @@ class PeersTab(Tab):
         self.listview.append_column(column)
 
         # Progress column
-        column = gtk.TreeViewColumn(_("Progress"))
-        render = gtk.CellRendererProgress()
+        column = Gtk.TreeViewColumn(_("Progress"))
+        render = Gtk.CellRendererProgress()
         column.pack_start(render, True)
         column.set_cell_data_func(render, cell_data_progress, 8)
         column.set_sort_column_id(8)
@@ -140,8 +140,8 @@ class PeersTab(Tab):
         self.listview.append_column(column)
 
         # Down Speed column
-        column = gtk.TreeViewColumn(_("Down Speed"))
-        render = gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_("Down Speed"))
+        render = Gtk.CellRendererText()
         column.pack_start(render, False)
         column.set_cell_data_func(render, cell_data_speed, 3)
         column.set_sort_column_id(3)
@@ -153,8 +153,8 @@ class PeersTab(Tab):
         self.listview.append_column(column)
 
         # Up Speed column
-        column = gtk.TreeViewColumn(_("Up Speed"))
-        render = gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_("Up Speed"))
+        render = Gtk.CellRendererText()
         column.pack_start(render, False)
         column.set_cell_data_func(render, cell_data_speed, 4)
         column.set_sort_column_id(4)
@@ -230,7 +230,7 @@ class PeersTab(Tab):
             cname = column.get_title()
             if state["columns"].has_key(cname):
                 cstate = state["columns"][cname]
-                column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+                column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
                 column.set_fixed_width(cstate["width"] if cstate["width"] > 0 else 10)
                 if state["sort_id"] == index and state["sort_order"] is not None:
                     column.set_sort_indicator(True)
@@ -269,7 +269,7 @@ class PeersTab(Tab):
         if not self.cached_flag_pixbufs.has_key(country):
             # We haven't created a pixbuf for this country yet
             try:
-                self.cached_flag_pixbufs[country] = gtk.gdk.pixbuf_new_from_file(
+                self.cached_flag_pixbufs[country] = GdkPixbuf.Pixbuf.new_from_file(
                     pkg_resources.resource_filename(
                         "deluge",
                          os.path.join("data", "pixmaps", "flags", country.lower() + ".png")))
@@ -379,7 +379,7 @@ class PeersTab(Tab):
     def _on_menuitem_add_peer_activate(self, menuitem):
         """This is a callback for manually adding a peer"""
         log.debug("on_menuitem_add_peer")
-        dialog_glade = gtk.Builder()
+        dialog_glade = Gtk.Builder()
         dialog_glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
                 "builder/dgtkpopups.ui"))

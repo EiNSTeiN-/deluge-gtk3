@@ -34,11 +34,12 @@
 #
 
 
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+
+from gi.repository import Gtk, Gdk
 import gettext
-import gobject
+from gi.repository import GObject
 import base64
 import os
 from urlparse import urljoin
@@ -61,7 +62,7 @@ import common
 class AddTorrentDialog(component.Component):
     def __init__(self):
         component.Component.__init__(self, "AddTorrentDialog")
-        self.glade = gtk.Builder()
+        self.glade = Gtk.Builder()
         self.glade.add_from_file(
             pkg_resources.resource_filename(
                 "deluge.ui.gtkui", "builder/add_torrent_dialog.ui"))
@@ -69,7 +70,7 @@ class AddTorrentDialog(component.Component):
         self.dialog = self.glade.get_object("dialog_add_torrent")
 
         self.dialog.connect("delete-event", self._on_delete_event)
-
+        
         self.glade.connect_signals({
             "on_button_file_clicked": self._on_button_file_clicked,
             "on_button_url_clicked": self._on_button_url_clicked,
@@ -83,11 +84,11 @@ class AddTorrentDialog(component.Component):
             "on_chk_move_completed_toggled": self._on_chk_move_completed_toggled
         })
 
-        self.torrent_liststore = gtk.ListStore(str, str, str)
+        self.torrent_liststore = Gtk.ListStore(str, str, str)
         #download?, path, filesize, sequence number, inconsistent?
-        self.files_treestore = gtk.TreeStore(bool, str, gobject.TYPE_UINT64,
-                                        gobject.TYPE_INT64, bool, str)
-        self.files_treestore.set_sort_column_id(1, gtk.SORT_ASCENDING)
+        self.files_treestore = Gtk.TreeStore(bool, str, GObject.TYPE_UINT64,
+                                        GObject.TYPE_INT64, bool, str)
+        self.files_treestore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         # Holds the files info
         self.files = {}
@@ -101,20 +102,20 @@ class AddTorrentDialog(component.Component):
         self.listview_torrents = self.glade.get_object("listview_torrents")
         self.listview_files = self.glade.get_object("listview_files")
 
-        render = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("Torrent"), render, text=1)
+        render = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_("Torrent"), render, text=1)
         self.listview_torrents.append_column(column)
 
-        render = gtk.CellRendererToggle()
+        render = Gtk.CellRendererToggle()
         render.connect("toggled", self._on_file_toggled)
-        column = gtk.TreeViewColumn(None, render, active=0, inconsistent=4)
+        column = Gtk.TreeViewColumn(None, render, active=0, inconsistent=4)
         self.listview_files.append_column(column)
 
-        column = gtk.TreeViewColumn(_("Filename"))
-        render = gtk.CellRendererPixbuf()
+        column = Gtk.TreeViewColumn(_("Filename"))
+        render = Gtk.CellRendererPixbuf()
         column.pack_start(render, False)
         column.add_attribute(render, "stock-id", 5)
-        render = gtk.CellRendererText()
+        render = Gtk.CellRendererText()
         render.set_property("editable", True)
         render.connect("edited", self._on_filename_edited)
         column.pack_start(render, True)
@@ -122,16 +123,16 @@ class AddTorrentDialog(component.Component):
         column.set_expand(True)
         self.listview_files.append_column(column)
 
-        render = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("Size"))
-        column.pack_start(render)
+        render = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_("Size"))
+        column.pack_start(render, True)
         column.set_cell_data_func(render, listview.cell_data_size, 2)
         self.listview_files.append_column(column)
 
         self.listview_torrents.set_model(self.torrent_liststore)
         self.listview_files.set_model(self.files_treestore)
 
-        self.listview_files.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
+        self.listview_files.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
         self.listview_torrents.get_selection().connect("changed",
                                     self._on_torrent_changed)
 
@@ -336,13 +337,13 @@ class AddTorrentDialog(component.Component):
         for key,value in split_files.iteritems():
             if key.endswith(os.path.sep):
                 chunk_iter = self.files_treestore.append(parent_iter,
-                                [True, key, 0, -1, False, gtk.STOCK_DIRECTORY])
+                                [True, key, 0, -1, False, Gtk.STOCK_DIRECTORY])
                 chunk_size = self.add_files(chunk_iter, value)
                 self.files_treestore.set(chunk_iter, 2, chunk_size)
                 ret += chunk_size
             else:
                 self.files_treestore.append(parent_iter, [value[2], key,
-                                        value[1]["size"], value[0], False, gtk.STOCK_FILE])
+                                        value[1]["size"], value[0], False, Gtk.STOCK_FILE])
 
                 if parent_iter and self.files_treestore.iter_has_child(parent_iter):
                     # Iterate through the children and see what we should label the
@@ -531,7 +532,7 @@ class AddTorrentDialog(component.Component):
         (model, row) = self.listview_torrents.get_selection().get_selected()
         if self.options[model[row][0]]["compact_allocation"]:
             def on_answer(response):
-                if response == gtk.RESPONSE_YES:
+                if response == Gtk.ResponseType.YES:
                     self.options[model[row][0]]["compact_allocation"] = False
                     self.update_torrent_options(model[row][0])
 
@@ -584,11 +585,11 @@ class AddTorrentDialog(component.Component):
     def _on_button_file_clicked(self, widget):
         log.debug("_on_button_file_clicked")
         # Setup the filechooserdialog
-        chooser = gtk.FileChooserDialog(_("Choose a .torrent file"),
+        chooser = Gtk.FileChooserDialog(_("Choose a .torrent file"),
             None,
-            gtk.FILE_CHOOSER_ACTION_OPEN,
-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN,
-                        gtk.RESPONSE_OK))
+            Gtk.FileChooserAction.OPEN,
+            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,
+                        Gtk.ResponseType.OK))
 
         chooser.set_transient_for(self.dialog)
         chooser.set_select_multiple(True)
@@ -596,11 +597,11 @@ class AddTorrentDialog(component.Component):
         chooser.set_local_only(False)
 
         # Add .torrent and * file filters
-        file_filter = gtk.FileFilter()
+        file_filter = Gtk.FileFilter()
         file_filter.set_name(_("Torrent files"))
         file_filter.add_pattern("*." + "torrent")
         chooser.add_filter(file_filter)
-        file_filter = gtk.FileFilter()
+        file_filter = Gtk.FileFilter()
         file_filter.set_name(_("All files"))
         file_filter.add_pattern("*")
         chooser.add_filter(file_filter)
@@ -613,7 +614,7 @@ class AddTorrentDialog(component.Component):
         # Run the dialog
         response = chooser.run()
 
-        if response == gtk.RESPONSE_OK:
+        if response == Gtk.ResponseType.OK:
             result = chooser.get_filenames()
             self.config["default_load_path"] = chooser.get_current_folder()
         else:
@@ -628,7 +629,7 @@ class AddTorrentDialog(component.Component):
         dialog = self.glade.get_object("url_dialog")
         entry = self.glade.get_object("entry_url")
 
-        dialog.set_default_response(gtk.RESPONSE_OK)
+        dialog.set_default_response(Gtk.ResponseType.OK)
         dialog.set_transient_for(self.dialog)
         entry.grab_focus()
 
@@ -643,7 +644,7 @@ class AddTorrentDialog(component.Component):
                 text = ''
             clip.CloseClipboard()
         else:
-            clip = gtk.clipboard_get(selection='PRIMARY')
+            clip = Gtk.Clipboard.get(Gdk.Atom.intern_static_string('PRIMARY'))
             text = clip.wait_for_text()
         if text:
             text = text.strip()
@@ -653,7 +654,7 @@ class AddTorrentDialog(component.Component):
         dialog.show_all()
         response = dialog.run()
 
-        if response == gtk.RESPONSE_OK:
+        if response == Gtk.ResponseType.OK:
             url = entry.get_text().decode("utf_8")
         else:
             url = None
@@ -673,13 +674,13 @@ class AddTorrentDialog(component.Component):
                 dialogs.ErrorDialog(_("Invalid URL"), "%s %s" % (url, _("is not a valid URL.")), self.dialog).run()
 
     def add_from_url(self, url):
-        dialog = gtk.Dialog(
+        dialog = Gtk.Dialog(
             _("Downloading..."),
-            flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_NO_SEPARATOR,
+            flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
             parent=self.dialog)
         dialog.set_transient_for(self.dialog)
 
-        pb = gtk.ProgressBar()
+        pb = Gtk.ProgressBar()
         dialog.vbox.pack_start(pb, True, True)
         dialog.show_all()
 
@@ -728,12 +729,12 @@ class AddTorrentDialog(component.Component):
         entry = self.glade.get_object("entry_hash")
         textview = self.glade.get_object("text_trackers")
 
-        dialog.set_default_response(gtk.RESPONSE_OK)
+        dialog.set_default_response(Gtk.ResponseType.OK)
         dialog.set_transient_for(self.dialog)
         entry.grab_focus()
         dialog.show_all()
         response = dialog.run()
-        if response == gtk.RESPONSE_OK and len(entry.get_text()) == 40:
+        if response == Gtk.ResponseType.OK and len(entry.get_text()) == 40:
             trackers = []
             b = textview.get_buffer()
             lines = b.get_text(b.get_start_iter(), b.get_end_iter()).strip().split("\n")
@@ -886,7 +887,7 @@ class AddTorrentDialog(component.Component):
                 split_text = new_text.split(os.path.sep)
                 for s in split_text[:-1]:
                     parent = self.files_treestore.append(parent,
-                                [True, s, 0, -1, False, gtk.STOCK_DIRECTORY])
+                                [True, s, 0, -1, False, Gtk.STOCK_DIRECTORY])
 
                 self.files_treestore[itr][1] = split_text[-1]
                 common.reparent_iter(self.files_treestore, itr, parent)
@@ -942,7 +943,7 @@ class AddTorrentDialog(component.Component):
                     # We don't iterate over the last item because we'll just use
                     # the existing itr and change the text
                     parent = self.files_treestore.append(parent,
-                                [True, s + os.path.sep, 0, -1, False, gtk.STOCK_DIRECTORY])
+                                [True, s + os.path.sep, 0, -1, False, Gtk.STOCK_DIRECTORY])
 
                 self.files_treestore[itr][1] = split_text[-1] + os.path.sep
 

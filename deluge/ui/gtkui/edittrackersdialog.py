@@ -34,7 +34,7 @@
 #
 
 
-import gtk
+from gi.repository import Gtk
 import pkg_resources
 
 import deluge.common
@@ -46,7 +46,7 @@ from deluge.log import LOG as log
 class EditTrackersDialog:
     def __init__(self, torrent_id, parent=None):
         self.torrent_id = torrent_id
-        self.glade = gtk.Builder()
+        self.glade = Gtk.Builder()
         self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "builder/edit_trackers.ui"))
@@ -78,16 +78,16 @@ class EditTrackersDialog:
         })
 
         # Create a liststore for tier, url
-        self.liststore = gtk.ListStore(int, str)
+        self.liststore = Gtk.ListStore(int, str)
 
         # Create the columns
         self.treeview.append_column(
-            gtk.TreeViewColumn(_("Tier"), gtk.CellRendererText(), text=0))
+            Gtk.TreeViewColumn(_("Tier"), Gtk.CellRendererText(), text=0))
         self.treeview.append_column(
-            gtk.TreeViewColumn(_("Tracker"), gtk.CellRendererText(), text=1))
+            Gtk.TreeViewColumn(_("Tracker"), Gtk.CellRendererText(), text=1))
 
         self.treeview.set_model(self.liststore)
-        self.liststore.set_sort_column_id(0, gtk.SORT_ASCENDING)
+        self.liststore.set_sort_column_id(0, Gtk.SortType.ASCENDING)
 
     def run(self):
         # Make sure we have a torrent_id.. if not just return
@@ -101,8 +101,10 @@ class EditTrackersDialog:
 
     def _on_get_torrent_status(self, status):
         """Display trackers dialog"""
-        for tracker in status["trackers"]:
-            self.add_tracker(tracker["tier"], tracker["url"])
+
+        if 'trackers' in status:
+            for tracker in status["trackers"]:
+                self.add_tracker(tracker["tier"], tracker["url"])
 
         self.dialog.show()
 
@@ -224,6 +226,6 @@ class EditTrackersDialog:
     def on_button_add_cancel_clicked(self, widget):
         log.debug("on_button_add_cancel_clicked")
         # Clear the entry widget and hide the dialog
-        b = gtk.TextBuffer()
+        b = Gtk.TextBuffer()
         self.glade.get_object("textview_trackers").set_buffer(b)
         self.add_tracker_dialog.hide()

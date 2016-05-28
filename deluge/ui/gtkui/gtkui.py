@@ -34,11 +34,15 @@
 #
 from deluge.log import LOG as log
 
-import gobject
-gobject.set_prgname("deluge")
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
+
+from gi.repository import GObject
+GObject.set_prgname("deluge")
 
 # Install the twisted reactor
-from twisted.internet import gtk2reactor
+from twisted.internet import gtk3reactor
 
 try:
     from twisted.internet.error import ReactorAlreadyInstalledError
@@ -47,7 +51,7 @@ except ImportError:
     pass
 
 try:
-    reactor = gtk2reactor.install()
+    reactor = gtk3reactor.install()
 except ReactorAlreadyInstalledError:
     # Running unit tests so trial already installed a rector
     pass
@@ -55,7 +59,8 @@ except ReactorAlreadyInstalledError:
 import gettext
 import locale
 import pkg_resources
-import gtk
+from gi.repository import Gtk, Gdk
+from gi.repository.Gtk import events_pending
 import sys
 import warnings
 
@@ -215,7 +220,7 @@ class GtkUI(object):
                     return 1
             SetConsoleCtrlHandler(win_handler)
 
-        if deluge.common.osx_check() and gtk.gdk.WINDOWING == "quartz":
+        if deluge.common.osx_check() and Gdk.WINDOWING == "quartz":
             import gtkosx_application
             self.osxapp = gtkosx_application.gtkosx_application_get()
             def on_die(*args):
@@ -243,8 +248,8 @@ class GtkUI(object):
         self.ipcinterface = IPCInterface(args)
 
         # Initialize gdk threading
-        gtk.gdk.threads_init()
-        gobject.threads_init()
+        Gdk.threads_init()
+        GObject.threads_init()
 
         # We make sure that the UI components start once we get a core URI
         client.set_disconnect_callback(self.__on_disconnect)
@@ -264,7 +269,7 @@ class GtkUI(object):
         self.statusbar = StatusBar()
         self.addtorrentdialog = AddTorrentDialog()
 
-        if deluge.common.osx_check() and gtk.gdk.WINDOWING == "quartz":
+        if deluge.common.osx_check() and Gdk.WINDOWING == "quartz":
             def nsapp_open_file(osxapp, filename):
                 # Will be raised at app launch (python opening main script)
                 if filename.endswith('Deluge-bin'):
@@ -288,10 +293,10 @@ class GtkUI(object):
 
         reactor.callWhenRunning(self._on_reactor_start)
         # Start the gtk main loop
-        gtk.gdk.threads_enter()
+        Gdk.threads_enter()
         reactor.run()
         self.shutdown()
-        gtk.gdk.threads_leave()
+        Gdk.threads_leave()
 
     def shutdown(self, *args, **kwargs):
         log.debug("gtkui shutting down..")
@@ -300,7 +305,7 @@ class GtkUI(object):
 
         # Process any pending gtk events since the mainloop has been quit
         if not deluge.common.windows_check() and not deluge.common.osx_check():
-            while gtk.events_pending() and reactor.running:
+            while events_pending() and reactor.running:
                 reactor.doIteration(0)
 
         # Shutdown all components
@@ -335,7 +340,7 @@ class GtkUI(object):
         if self.config["classic_mode"]:
 
             def on_dialog_response(response):
-                if response != gtk.RESPONSE_YES:
+                if response != Gtk.ResponseType.YES:
                     # The user does not want to turn Classic Mode off, so just quit
                     self.mainwindow.quit()
                     return

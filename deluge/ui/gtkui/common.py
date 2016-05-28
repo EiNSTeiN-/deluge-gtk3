@@ -37,9 +37,10 @@
 
 import os
 
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+gi.require_version('GConf', '2.0')
+from gi.repository import Gtk, GdkPixbuf
 
 import pkg_resources
 
@@ -52,10 +53,10 @@ def get_logo(size):
     """Returns a deluge logo pixbuf based on the size parameter."""
     try:
         if deluge.common.windows_check() or deluge.common.osx_check():
-            return gtk.gdk.pixbuf_new_from_file_at_size(deluge.common.get_pixmap("deluge.png"), \
+            return GdkPixbuf.Pixbuf.new_from_file_at_size(deluge.common.get_pixmap("deluge.png"), \
                 size, size)
         else:
-            return gtk.gdk.pixbuf_new_from_file_at_size(deluge.common.get_pixmap("deluge.svg"), \
+            return GdkPixbuf.Pixbuf.new_from_file_at_size(deluge.common.get_pixmap("deluge.svg"), \
                 size, size)
     except Exception, e:
         log.warning(e)
@@ -72,7 +73,7 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
     if activated_label is None:
         activated_label = _("Activated")
 
-    menu = gtk.Menu()
+    menu = Gtk.Menu()
     group = None
     if show_activated is False:
         if pref_value > -1 and pref_value not in value_list:
@@ -81,10 +82,10 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
 
         for value in sorted(value_list):
             if suffix != None:
-                menuitem = gtk.RadioMenuItem(group, str(value) + " " + \
-                    suffix)
+                menuitem = Gtk.RadioMenuItem(str(value) + " " + \
+                    suffix, group)
             else:
-                menuitem = gtk.RadioMenuItem(group, str(value))
+                menuitem = Gtk.RadioMenuItem(str(value), group)
 
             group = menuitem
 
@@ -98,7 +99,7 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
 
     if show_activated is True:
         for value in sorted(value_list):
-            menuitem = gtk.RadioMenuItem(group, str(activated_label))
+            menuitem = Gtk.RadioMenuItem(str(activated_label), group)
 
             group = menuitem
 
@@ -111,7 +112,7 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
             menu.append(menuitem)
 
     if show_notset:
-        menuitem = gtk.RadioMenuItem(group, notset_label)
+        menuitem = Gtk.RadioMenuItem(notset_label, group)
         menuitem.set_name("unlimited")
         if pref_value < notset_lessthan and pref_value != None:
             menuitem.set_active(True)
@@ -122,9 +123,9 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
 
     # Add the Other... menuitem
     if show_other is True:
-        menuitem = gtk.SeparatorMenuItem()
+        menuitem = Gtk.SeparatorMenuItem()
         menu.append(menuitem)
-        menuitem = gtk.MenuItem(_("Other..."))
+        menuitem = Gtk.MenuItem(_("Other..."))
         menuitem.set_name("other")
         menuitem.connect("activate", callback)
         menu.append(menuitem)
@@ -153,7 +154,7 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
     if type(default) != int and type(default) != float:
         raise TypeError("default value needs to be an int or float")
 
-    glade = gtk.Builder()
+    glade = Gtk.Builder()
     glade.add_from_file(
         pkg_resources.resource_filename("deluge.ui.gtkui",
                                     "builder/dgtkpopups.ui"))
@@ -163,12 +164,12 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
     glade.get_object("label_header").set_markup("<b>" + header + "</b>")
     glade.get_object("label_type").set_text(type_str)
     if image_stockid:
-        glade.get_object("image").set_from_stock(image_stockid, gtk.ICON_SIZE_LARGE_TOOLBAR)
+        glade.get_object("image").set_from_stock(image_stockid, Gtk.IconSize.LARGE_TOOLBAR)
     if image_filename:
         # Hack for Windows since it doesn't support svg
         if os.path.splitext(image_filename)[1] == ".svg" and (deluge.common.windows_check() or deluge.common.osx_check()):
             image_filename = os.path.splitext(image_filename)[0] + "16.png"
-        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
             deluge.common.get_pixmap(image_filename), 32, 32)
         glade.get_object("image").set_from_pixbuf(pixbuf)
 
@@ -182,7 +183,7 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
 
     value = None
     response = dialog.run()
-    if response == gtk.RESPONSE_OK:
+    if response == Gtk.ResponseType.OK:
         if type(default) == int:
             value = spinbutton.get_value_as_int()
         else:
@@ -228,7 +229,7 @@ def get_deluge_icon():
         return get_logo(32)
     else:
         try:
-            icon_theme = gtk.icon_theme_get_default()
+            icon_theme = Gtk.IconTheme.get_default()
             return icon_theme.load_icon("deluge", 64, 0)
         except:
             return get_logo(64)
@@ -246,13 +247,13 @@ def associate_magnet_links(overwrite=False):
     if not deluge.common.windows_check():
         # gconf method is only available in a GNOME environment
         try:
-            import gconf
+            from gi.repository import GConf
         except ImportError:
             log.debug("gconf not available, so will not attempt to register magnet uri handler")
             return False
         else:
             key = "/desktop/gnome/url-handlers/magnet/command"
-            gconf_client = gconf.client_get_default()
+            gconf_client = GConf.Client.get_default()
             if (gconf_client.get(key) and overwrite) or not gconf_client.get(key):
                 # We are either going to overwrite the key, or do it if it hasn't been set yet
                 if gconf_client.set_string(key, "deluge '%s'"):

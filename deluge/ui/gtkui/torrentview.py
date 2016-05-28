@@ -36,11 +36,11 @@
 
 """The torrent view component that lists all torrents in the session."""
 
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, GdkPixbuf
 import gettext
-import gobject
+from gi.repository import GObject
 import warnings
 from urlparse import urlparse
 
@@ -54,17 +54,17 @@ from removetorrentdialog import RemoveTorrentDialog
 
 # Status icons.. Create them from file only once to avoid constantly
 # re-creating them.
-icon_downloading = gtk.gdk.pixbuf_new_from_file(
+icon_downloading = GdkPixbuf.Pixbuf.new_from_file(
     deluge.common.get_pixmap("downloading16.png"))
-icon_seeding = gtk.gdk.pixbuf_new_from_file(
+icon_seeding = GdkPixbuf.Pixbuf.new_from_file(
     deluge.common.get_pixmap("seeding16.png"))
-icon_inactive = gtk.gdk.pixbuf_new_from_file(
+icon_inactive = GdkPixbuf.Pixbuf.new_from_file(
     deluge.common.get_pixmap("inactive16.png"))
-icon_alert = gtk.gdk.pixbuf_new_from_file(
+icon_alert = GdkPixbuf.Pixbuf.new_from_file(
     deluge.common.get_pixmap("alert16.png"))
-icon_queued = gtk.gdk.pixbuf_new_from_file(
+icon_queued = GdkPixbuf.Pixbuf.new_from_file(
     deluge.common.get_pixmap("queued16.png"))
-icon_checking = gtk.gdk.pixbuf_new_from_file(
+icon_checking = GdkPixbuf.Pixbuf.new_from_file(
     deluge.common.get_pixmap("checking16.png"))
 
 # Holds the info for which status icon to display based on state
@@ -117,7 +117,7 @@ def cell_data_statusicon(column, cell, model, row, data):
 def cell_data_trackericon(column, cell, model, row, data):
     def on_get_icon(icon):
         def create_blank_pixbuf():
-            i = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, True, 8, 16, 16)
+            i = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 16, 16)
             i.fill(0x00000000)
             return i
 
@@ -125,8 +125,8 @@ def cell_data_trackericon(column, cell, model, row, data):
             pixbuf = icon.get_cached_icon()
             if not pixbuf:
                 try:
-                    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(icon.get_filename(), 16, 16)
-                except gobject.GError, e:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon.get_filename(), 16, 16)
+                except GObject.GError, e:
                     # Failed to load the pixbuf (Bad image file), so set a blank pixbuf
                     pixbuf = create_blank_pixbuf()
                 finally:
@@ -245,13 +245,13 @@ class TorrentView(listview.ListView, component.Component):
                                  status_field=["state", "name"],
                                  function=cell_data_statusicon)
         self.add_func_column(_("Size"), listview.cell_data_size,
-                             [gobject.TYPE_UINT64],
+                             [GObject.TYPE_UINT64],
                              status_field=["total_wanted"])
         self.add_func_column(_("Downloaded"), listview.cell_data_size,
-                             [gobject.TYPE_UINT64],
+                             [GObject.TYPE_UINT64],
                              status_field=["all_time_download"], default=False)
         self.add_func_column(_("Uploaded"), listview.cell_data_size,
-                             [gobject.TYPE_UINT64],
+                             [GObject.TYPE_UINT64],
                              status_field=["total_uploaded"], default=False)
         self.add_progress_column(_("Progress"),
                                  status_field=["progress", "state"],
@@ -401,7 +401,7 @@ class TorrentView(listview.ListView, component.Component):
     def update(self):
         if self.got_state:
             # Send a status request
-            gobject.idle_add(self.send_status_request)
+            GObject.idle_add(self.send_status_request)
 
     def update_view(self, load_new_list=False):
         """Update the torrent view model with data we've received."""
@@ -473,7 +473,7 @@ class TorrentView(listview.ListView, component.Component):
             # We do not bother updating since the status hasn't changed
             self.prev_status = self.status
             return
-        gobject.idle_add(self.update_view)
+        GObject.idle_add(self.update_view)
 
     def add_row(self, torrent_id, update=True):
         """Adds a new torrent row to the treeview"""
@@ -588,7 +588,7 @@ class TorrentView(listview.ListView, component.Component):
             else:
                 self.treeview.get_selection().select_iter(row)
             torrentmenu = component.get("MenuBar").torrentmenu
-            torrentmenu.popup(None, None, None, event.button, event.time)
+            torrentmenu.popup(None, None, None, None, event.button, event.time)
             return True
 
     def on_selection_changed(self, treeselection):
@@ -639,7 +639,7 @@ class TorrentView(listview.ListView, component.Component):
 
     # Handle keyboard shortcuts
     def on_key_press_event(self, widget, event):
-        keyname = gtk.gdk.keyval_name(event.keyval)
+        keyname = Gdk.keyval_name(event.keyval)
         if keyname is not None:
             func = getattr(self, 'keypress_' + keyname, None)
             if func:

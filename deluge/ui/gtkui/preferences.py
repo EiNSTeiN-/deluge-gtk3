@@ -34,9 +34,9 @@
 #
 
 
-import pygtk
-pygtk.require('2.0')
-import gtk
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
 import pkg_resources
 
 import deluge.component as component
@@ -51,7 +51,7 @@ import deluge.configmanager
 class Preferences(component.Component):
     def __init__(self):
         component.Component.__init__(self, "Preferences")
-        self.glade = gtk.Builder()
+        self.glade = Gtk.Builder()
         self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "builder/preferences_dialog.ui"))
@@ -72,10 +72,10 @@ class Preferences(component.Component):
             self.glade.get_object("button_associate_magnet").hide()
 
         # Setup the liststore for the categories (tab pages)
-        self.liststore = gtk.ListStore(int, str)
+        self.liststore = Gtk.ListStore(int, str)
         self.treeview.set_model(self.liststore)
-        render = gtk.CellRendererText()
-        column = gtk.TreeViewColumn(_("Categories"), render, text=1)
+        render = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn(_("Categories"), render, text=1)
         self.treeview.append_column(column)
         # Add the default categories
         i = 0
@@ -87,17 +87,17 @@ class Preferences(component.Component):
 
         # Setup plugin tab listview
         # The third entry is for holding translated plugin names
-        self.plugin_liststore = gtk.ListStore(str, bool, str)
-        self.plugin_liststore.set_sort_column_id(0, gtk.SORT_ASCENDING)
+        self.plugin_liststore = Gtk.ListStore(str, bool, str)
+        self.plugin_liststore.set_sort_column_id(0, Gtk.SortType.ASCENDING)
         self.plugin_listview = self.glade.get_object("plugin_listview")
         self.plugin_listview.set_model(self.plugin_liststore)
-        render = gtk.CellRendererToggle()
+        render = Gtk.CellRendererToggle()
         render.connect("toggled", self.on_plugin_toggled)
         render.set_property("activatable", True)
         self.plugin_listview.append_column(
-            gtk.TreeViewColumn(_("Enabled"), render, active=1))
+            Gtk.TreeViewColumn(_("Enabled"), render, active=1))
         self.plugin_listview.append_column(
-            gtk.TreeViewColumn(_("Plugin"), gtk.CellRendererText(), text=2))
+            Gtk.TreeViewColumn(_("Plugin"), Gtk.CellRendererText(), text=2))
 
         # Connect to the 'changed' event of TreeViewSelection to get selection
         # changes.
@@ -136,26 +136,26 @@ class Preferences(component.Component):
         parent = widget.get_parent()
         if parent:
             parent.remove(widget)
-        vbox = gtk.VBox()
-        label = gtk.Label()
+        vbox = Gtk.VBox()
+        label = Gtk.Label()
         label.set_use_markup(True)
         label.set_markup("<b><i><big>" + name + "</big></i></b>")
         label.set_alignment(0.00, 0.50)
         label.set_padding(10, 10)
         vbox.pack_start(label, False, True, 0)
-        sep = gtk.HSeparator()
+        sep = Gtk.HSeparator()
         vbox.pack_start(sep, False, True, 0)
-        align = gtk.Alignment()
+        align = Gtk.Alignment.new()
         align.set_padding(5, 0, 0, 0)
         align.set(0, 0, 1, 1)
         align.add(widget)
         vbox.pack_start(align, True, True, 0)
-        scrolled = gtk.ScrolledWindow()
-        viewport = gtk.Viewport()
-        viewport.set_shadow_type(gtk.SHADOW_NONE)
+        scrolled = Gtk.ScrolledWindow()
+        viewport = Gtk.Viewport()
+        viewport.set_shadow_type(Gtk.ShadowType.NONE)
         viewport.add(vbox)
         scrolled.add(viewport)
-        scrolled.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
         scrolled.show_all()
         # Add this page to the notebook
         index = self.notebook.append_page(scrolled)
@@ -360,7 +360,7 @@ class Preferences(component.Component):
                 modifier = core_widgets[key][0]
                 value = core_widgets[key][1]
                 widget = self.glade.get_object(key)
-                if type(widget) == gtk.FileChooserButton:
+                if type(widget) == Gtk.FileChooserButton:
                     for child in widget.get_children():
                         child.set_sensitive(True)
                 widget.set_sensitive(True)
@@ -461,7 +461,7 @@ class Preferences(component.Component):
             # We don't appear to be connected to a daemon
             for key in core_widget_list:
                 widget = self.glade.get_object(key)
-                if type(widget) == gtk.FileChooserButton:
+                if type(widget) == Gtk.FileChooserButton:
                     for child in widget.get_children():
                         child.set_sensitive(False)
                 widget.set_sensitive(False)
@@ -763,14 +763,14 @@ class Preferences(component.Component):
             self.show()
 
         if client.is_classicmode() != new_gtkui_config["classic_mode"]:
-            dialog = gtk.MessageDialog(
-                flags=gtk.DIALOG_MODAL|gtk.DIALOG_DESTROY_WITH_PARENT,
-                type=gtk.MESSAGE_QUESTION,
-                buttons=gtk.BUTTONS_YES_NO,
+            dialog = Gtk.MessageDialog(
+                flags=Gtk.DialogFlags.MODAL|Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                type=Gtk.MessageType.QUESTION,
+                buttons=Gtk.ButtonsType.YES_NO,
                 message_format=_("You must restart the deluge UI to change classic mode. Quit now?")
             )
             result = dialog.run()
-            if result == gtk.RESPONSE_YES:
+            if result == Gtk.ResponseType.YES:
                 shutdown_daemon = (not client.is_classicmode() and
                                    client.connected() and
                                    client.is_localhost())
@@ -890,10 +890,10 @@ class Preferences(component.Component):
         log.debug("on_test_port_clicked")
         def on_get_test(status):
             if status:
-                self.glade.get_object("port_img").set_from_stock(gtk.STOCK_YES, 4)
+                self.glade.get_object("port_img").set_from_stock(Gtk.STOCK_YES, 4)
                 self.glade.get_object("port_img").show()
             else:
-                self.glade.get_object("port_img").set_from_stock(gtk.STOCK_DIALOG_WARNING, 4)
+                self.glade.get_object("port_img").set_from_stock(Gtk.STOCK_DIALOG_WARNING, 4)
                 self.glade.get_object("port_img").show()
         client.core.test_listen_port().addCallback(on_get_test)
         self.glade.get_object("port_img").set_from_file(
@@ -929,17 +929,17 @@ class Preferences(component.Component):
 
     def _on_button_plugin_install_clicked(self, widget):
         log.debug("_on_button_plugin_install_clicked")
-        chooser = gtk.FileChooserDialog(_("Select the Plugin"),
+        chooser = Gtk.FileChooserDialog(_("Select the Plugin"),
             self.pref_dialog,
-            gtk.FILE_CHOOSER_ACTION_OPEN,
-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN,
-                        gtk.RESPONSE_OK))
+            Gtk.FileChooserAction.OPEN,
+            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,
+                        Gtk.ResponseType.OK))
 
         chooser.set_transient_for(self.pref_dialog)
         chooser.set_select_multiple(False)
         chooser.set_property("skip-taskbar-hint", True)
 
-        file_filter = gtk.FileFilter()
+        file_filter = Gtk.FileFilter()
         file_filter.set_name(_("Plugin Eggs"))
         file_filter.add_pattern("*." + "egg")
         chooser.add_filter(file_filter)
@@ -947,7 +947,7 @@ class Preferences(component.Component):
         # Run the dialog
         response = chooser.run()
 
-        if response == gtk.RESPONSE_OK:
+        if response == Gtk.ResponseType.OK:
             filepath = chooser.get_filename()
         else:
             chooser.destroy()
