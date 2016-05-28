@@ -1,154 +1,148 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!--*- mode: xml -*-->
-<glade-interface>
-  <widget class="GtkMenu" id="tray_menu">
+<interface>
+  <object class="GtkImage" id="add-torrent-image">
+    <property name="visible">True</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="stock">gtk-add</property>
+    <property name="icon_size">1</property>
+  </object>
+  <object class="GtkImage" id="pause-image">
+    <property name="visible">True</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="stock">gtk-media-pause</property>
+    <property name="icon_size">1</property>
+  </object>
+  <object class="GtkImage" id="resume-image">
+    <property name="visible">True</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="stock">gtk-media-play</property>
+    <property name="icon_size">1</property>
+  </object>
+  <object class="GtkImage" id="download-limit-image">
+    <property name="visible">True</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="icon_size">1</property>
+  </object>
+  <object class="GtkImage" id="upload-limit-image">
+    <property name="visible">True</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="icon_size">1</property>
+  </object>
+  <object class="GtkImage" id="quit-image">
+    <property name="visible">True</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="stock">gtk-quit</property>
+    <property name="icon_size">1</property>
+  </object>
+  <object class="GtkMenu" id="tray_menu">
     <property name="visible">True</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <child>
-      <widget class="GtkCheckMenuItem" id="menuitem_show_deluge">
+      <object class="GtkCheckMenuItem" id="menuitem_show_deluge">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="label" translatable="yes">_Show Deluge</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="on_menuitem_show_deluge_activate"/>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkSeparatorMenuItem" id="separatormenuitem1">
+      <object class="GtkSeparatorMenuItem" id="separatormenuitem1">
         <property name="visible">True</property>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkImageMenuItem" id="menuitem_add_torrent">
+      <object class="GtkImageMenuItem" id="menuitem_add_torrent">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="label" translatable="yes">_Add Torrent</property>
         <property name="use_underline">True</property>
+        <property name="image">add-torrent-image</property>
         <signal name="activate" handler="on_menuitem_add_torrent_activate"/>
-        <child internal-child="image">
-          <widget class="GtkImage" id="menu-item-image1">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="stock">gtk-add</property>
-            <property name="icon_size">1</property>
-          </widget>
-        </child>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkSeparatorMenuItem" id="separatormenuitem2">
+      <object class="GtkSeparatorMenuItem" id="separatormenuitem2">
         <property name="visible">True</property>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkImageMenuItem" id="menuitem_pause_all">
+      <object class="GtkImageMenuItem" id="menuitem_pause_all">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="label" translatable="yes">_Pause All</property>
         <property name="use_underline">True</property>
+        <property name="image">pause-image</property>
         <signal name="activate" handler="on_menuitem_pause_all_activate"/>
-        <child internal-child="image">
-          <widget class="GtkImage" id="menu-item-image6">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="stock">gtk-media-pause</property>
-            <property name="icon_size">1</property>
-          </widget>
-        </child>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkImageMenuItem" id="menuitem_resume_all">
+      <object class="GtkImageMenuItem" id="menuitem_resume_all">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="label" translatable="yes">_Resume All</property>
         <property name="use_underline">True</property>
+        <property name="image">resume-image</property>
         <signal name="activate" handler="on_menuitem_resume_all_activate"/>
-        <child internal-child="image">
-          <widget class="GtkImage" id="menu-item-image7">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="stock">gtk-media-play</property>
-            <property name="icon_size">1</property>
-          </widget>
-        </child>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkSeparatorMenuItem" id="separatormenuitem3">
+      <object class="GtkSeparatorMenuItem" id="separatormenuitem3">
         <property name="visible">True</property>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkImageMenuItem" id="menuitem_download_limit">
+      <object class="GtkImageMenuItem" id="menuitem_download_limit">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="label" translatable="yes">_Download Speed Limit</property>
         <property name="use_underline">True</property>
         <property name="always_show_image">True</property>
-        <child internal-child="image">
-          <widget class="GtkImage" id="download-limit-image">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="icon_size">1</property>
-          </widget>
-        </child>
-      </widget>
+        <property name="image">download-limit-image</property>
+      </object>
     </child>
     <child>
-      <widget class="GtkImageMenuItem" id="menuitem_upload_limit">
+      <object class="GtkImageMenuItem" id="menuitem_upload_limit">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="label" translatable="yes">_Upload Speed Limit</property>
         <property name="use_underline">True</property>
         <property name="always_show_image">True</property>
-        <child internal-child="image">
-          <widget class="GtkImage" id="upload-limit-image">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="icon_size">1</property>
-          </widget>
-        </child>
-      </widget>
+        <property name="image">upload-limit-image</property>
+      </object>
     </child>
     <child>
-      <widget class="GtkSeparatorMenuItem" id="separatormenuitem4">
+      <object class="GtkSeparatorMenuItem" id="separatormenuitem4">
         <property name="visible">True</property>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkImageMenuItem" id="menuitem_quitdaemon">
+      <object class="GtkImageMenuItem" id="menuitem_quitdaemon">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="label" translatable="yes">Quit &amp; Shutdown Daemon</property>
         <property name="use_underline">True</property>
         <property name="use_stock">False</property>
+        <property name="image">quit-image</property>
         <signal name="activate" handler="on_menuitem_quitdaemon_activate"/>
-        <child internal-child="image">
-          <widget class="GtkImage" id="menu-item-image8">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="stock">gtk-quit</property>
-            <property name="icon_size">1</property>
-          </widget>
-        </child>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkSeparatorMenuItem" id="separatormenuitem5">
+      <object class="GtkSeparatorMenuItem" id="separatormenuitem5">
         <property name="visible">True</property>
-      </widget>
+      </object>
     </child>
     <child>
-      <widget class="GtkImageMenuItem" id="menuitem_quit">
+      <object class="GtkImageMenuItem" id="menuitem_quit">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="label" translatable="no">gtk-quit</property>
         <property name="use_stock">True</property>
         <property name="use_underline">True</property>
         <signal name="activate" handler="on_menuitem_quit_activate"/>
-      </widget>
+      </object>
     </child>
-  </widget>
-</glade-interface>
+  </object>
+</interface>

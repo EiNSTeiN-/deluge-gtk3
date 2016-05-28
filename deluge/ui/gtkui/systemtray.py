@@ -85,11 +85,12 @@ class SystemTray(component.Component):
 
     def enable(self):
         """Enables the system tray icon."""
-        self.tray_glade = gtk.glade.XML(
+        self.tray_glade = gtk.Builder()
+        self.tray_glade.add_from_file(
             pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "glade/tray_menu.glade"))
 
-        self.tray_glade.signal_autoconnect({
+        self.tray_glade.connect_signals({
             "on_menuitem_show_deluge_activate": \
                 self.on_menuitem_show_deluge_activate,
             "on_menuitem_add_torrent_activate": \
