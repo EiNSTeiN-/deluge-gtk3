@@ -36,7 +36,7 @@
 
 import pygtk
 pygtk.require('2.0')
-import gtk, gtk.glade
+import gtk, gtkgladecompat
 import pkg_resources
 
 import deluge.component as component
@@ -51,7 +51,8 @@ import deluge.configmanager
 class Preferences(component.Component):
     def __init__(self):
         component.Component.__init__(self, "Preferences")
-        self.glade = gtk.glade.XML(
+        self.glade = gtk.Builder()
+        self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "glade/preferences_dialog.glade"))
         self.pref_dialog = self.glade.get_widget("pref_dialog")
@@ -106,7 +107,7 @@ class Preferences(component.Component):
         self.plugin_listview.get_selection().connect("changed",
             self.on_plugin_selection_changed)
 
-        self.glade.signal_autoconnect({
+        self.glade.connect_signals({
             "on_pref_dialog_delete_event": self.on_pref_dialog_delete_event,
             "on_button_ok_clicked": self.on_button_ok_clicked,
             "on_button_apply_clicked": self.on_button_apply_clicked,
