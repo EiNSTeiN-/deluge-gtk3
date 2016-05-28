@@ -1,0 +1,2986 @@
+commit ab88c3d5b1b7480570b961cf407fe01a7abaa359
+Author: EiNSTeiN_ <einstein@g3nius.org>
+Date:   Sat May 28 02:03:14 2016 -0400
+
+    Run pygi-convert.sh and fix most of the things
+
+diff --git a/deluge/ui/gtkui/aboutdialog.py b/deluge/ui/gtkui/aboutdialog.py
+index bca7bb6..a9c9d05 100644
+--- a/deluge/ui/gtkui/aboutdialog.py
++++ b/deluge/ui/gtkui/aboutdialog.py
+@@ -34,9 +34,10 @@
+ #
+ 
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk
++import gi
++gi.require_version("Gtk", "3.0")
++
++from gi.repository import Gtk, GdkPixbuf
+ import pkg_resources
+ from deluge.ui.client import client
+ 
+@@ -48,9 +49,9 @@ class AboutDialog:
+         # Get the glade file for the about dialog
+         def url_hook(dialog, url):
+             deluge.common.open_url_in_browser(url)
+-        gtk.about_dialog_set_url_hook(url_hook)
+-        self.about = gtk.AboutDialog()
+-        self.about.set_position(gtk.WIN_POS_CENTER)
++        Gtk.about_dialog_set_url_hook(url_hook)
++        self.about = Gtk.AboutDialog()
++        self.about.set_position(Gtk.WindowPosition.CENTER)
+         self.about.set_name("Deluge")
+         self.about.set_program_name(_("Deluge"))
+ 
+@@ -278,7 +279,7 @@ class AboutDialog:
+         self.about.set_website_label("deluge-torrent.org")
+ 
+         self.about.set_icon(common.get_deluge_icon())
+-        self.about.set_logo(gtk.gdk.pixbuf_new_from_file(
++        self.about.set_logo(GdkPixbuf.Pixbuf.new_from_file(
+             deluge.common.get_pixmap("deluge-about.png")
+         ))
+ 
+diff --git a/deluge/ui/gtkui/addtorrentdialog.py b/deluge/ui/gtkui/addtorrentdialog.py
+index b4eadbc..6d5a3e4 100644
+--- a/deluge/ui/gtkui/addtorrentdialog.py
++++ b/deluge/ui/gtkui/addtorrentdialog.py
+@@ -34,11 +34,12 @@
+ #
+ 
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk
++import gi
++gi.require_version("Gtk", "3.0")
++
++from gi.repository import Gtk, Gdk
+ import gettext
+-import gobject
++from gi.repository import GObject
+ import base64
+ import os
+ from urlparse import urljoin
+@@ -61,7 +62,7 @@ import common
+ class AddTorrentDialog(component.Component):
+     def __init__(self):
+         component.Component.__init__(self, "AddTorrentDialog")
+-        self.glade = gtk.Builder()
++        self.glade = Gtk.Builder()
+         self.glade.add_from_file(
+             pkg_resources.resource_filename(
+                 "deluge.ui.gtkui", "builder/add_torrent_dialog.ui"))
+@@ -69,7 +70,7 @@ class AddTorrentDialog(component.Component):
+         self.dialog = self.glade.get_object("dialog_add_torrent")
+ 
+         self.dialog.connect("delete-event", self._on_delete_event)
+-
++        
+         self.glade.connect_signals({
+             "on_button_file_clicked": self._on_button_file_clicked,
+             "on_button_url_clicked": self._on_button_url_clicked,
+@@ -83,11 +84,11 @@ class AddTorrentDialog(component.Component):
+             "on_chk_move_completed_toggled": self._on_chk_move_completed_toggled
+         })
+ 
+-        self.torrent_liststore = gtk.ListStore(str, str, str)
++        self.torrent_liststore = Gtk.ListStore(str, str, str)
+         #download?, path, filesize, sequence number, inconsistent?
+-        self.files_treestore = gtk.TreeStore(bool, str, gobject.TYPE_UINT64,
+-                                        gobject.TYPE_INT64, bool, str)
+-        self.files_treestore.set_sort_column_id(1, gtk.SORT_ASCENDING)
++        self.files_treestore = Gtk.TreeStore(bool, str, GObject.TYPE_UINT64,
++                                        GObject.TYPE_INT64, bool, str)
++        self.files_treestore.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+ 
+         # Holds the files info
+         self.files = {}
+@@ -101,20 +102,20 @@ class AddTorrentDialog(component.Component):
+         self.listview_torrents = self.glade.get_object("listview_torrents")
+         self.listview_files = self.glade.get_object("listview_files")
+ 
+-        render = gtk.CellRendererText()
+-        column = gtk.TreeViewColumn(_("Torrent"), render, text=1)
++        render = Gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Torrent"), render, text=1)
+         self.listview_torrents.append_column(column)
+ 
+-        render = gtk.CellRendererToggle()
++        render = Gtk.CellRendererToggle()
+         render.connect("toggled", self._on_file_toggled)
+-        column = gtk.TreeViewColumn(None, render, active=0, inconsistent=4)
++        column = Gtk.TreeViewColumn(None, render, active=0, inconsistent=4)
+         self.listview_files.append_column(column)
+ 
+-        column = gtk.TreeViewColumn(_("Filename"))
+-        render = gtk.CellRendererPixbuf()
++        column = Gtk.TreeViewColumn(_("Filename"))
++        render = Gtk.CellRendererPixbuf()
+         column.pack_start(render, False)
+         column.add_attribute(render, "stock-id", 5)
+-        render = gtk.CellRendererText()
++        render = Gtk.CellRendererText()
+         render.set_property("editable", True)
+         render.connect("edited", self._on_filename_edited)
+         column.pack_start(render, True)
+@@ -122,16 +123,16 @@ class AddTorrentDialog(component.Component):
+         column.set_expand(True)
+         self.listview_files.append_column(column)
+ 
+-        render = gtk.CellRendererText()
+-        column = gtk.TreeViewColumn(_("Size"))
+-        column.pack_start(render)
++        render = Gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Size"))
++        column.pack_start(render, True)
+         column.set_cell_data_func(render, listview.cell_data_size, 2)
+         self.listview_files.append_column(column)
+ 
+         self.listview_torrents.set_model(self.torrent_liststore)
+         self.listview_files.set_model(self.files_treestore)
+ 
+-        self.listview_files.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
++        self.listview_files.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
+         self.listview_torrents.get_selection().connect("changed",
+                                     self._on_torrent_changed)
+ 
+@@ -336,13 +337,13 @@ class AddTorrentDialog(component.Component):
+         for key,value in split_files.iteritems():
+             if key.endswith(os.path.sep):
+                 chunk_iter = self.files_treestore.append(parent_iter,
+-                                [True, key, 0, -1, False, gtk.STOCK_DIRECTORY])
++                                [True, key, 0, -1, False, Gtk.STOCK_DIRECTORY])
+                 chunk_size = self.add_files(chunk_iter, value)
+                 self.files_treestore.set(chunk_iter, 2, chunk_size)
+                 ret += chunk_size
+             else:
+                 self.files_treestore.append(parent_iter, [value[2], key,
+-                                        value[1]["size"], value[0], False, gtk.STOCK_FILE])
++                                        value[1]["size"], value[0], False, Gtk.STOCK_FILE])
+ 
+                 if parent_iter and self.files_treestore.iter_has_child(parent_iter):
+                     # Iterate through the children and see what we should label the
+@@ -531,7 +532,7 @@ class AddTorrentDialog(component.Component):
+         (model, row) = self.listview_torrents.get_selection().get_selected()
+         if self.options[model[row][0]]["compact_allocation"]:
+             def on_answer(response):
+-                if response == gtk.RESPONSE_YES:
++                if response == Gtk.ResponseType.YES:
+                     self.options[model[row][0]]["compact_allocation"] = False
+                     self.update_torrent_options(model[row][0])
+ 
+@@ -584,11 +585,11 @@ class AddTorrentDialog(component.Component):
+     def _on_button_file_clicked(self, widget):
+         log.debug("_on_button_file_clicked")
+         # Setup the filechooserdialog
+-        chooser = gtk.FileChooserDialog(_("Choose a .torrent file"),
++        chooser = Gtk.FileChooserDialog(_("Choose a .torrent file"),
+             None,
+-            gtk.FILE_CHOOSER_ACTION_OPEN,
+-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN,
+-                        gtk.RESPONSE_OK))
++            Gtk.FileChooserAction.OPEN,
++            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,
++                        Gtk.ResponseType.OK))
+ 
+         chooser.set_transient_for(self.dialog)
+         chooser.set_select_multiple(True)
+@@ -596,11 +597,11 @@ class AddTorrentDialog(component.Component):
+         chooser.set_local_only(False)
+ 
+         # Add .torrent and * file filters
+-        file_filter = gtk.FileFilter()
++        file_filter = Gtk.FileFilter()
+         file_filter.set_name(_("Torrent files"))
+         file_filter.add_pattern("*." + "torrent")
+         chooser.add_filter(file_filter)
+-        file_filter = gtk.FileFilter()
++        file_filter = Gtk.FileFilter()
+         file_filter.set_name(_("All files"))
+         file_filter.add_pattern("*")
+         chooser.add_filter(file_filter)
+@@ -613,7 +614,7 @@ class AddTorrentDialog(component.Component):
+         # Run the dialog
+         response = chooser.run()
+ 
+-        if response == gtk.RESPONSE_OK:
++        if response == Gtk.ResponseType.OK:
+             result = chooser.get_filenames()
+             self.config["default_load_path"] = chooser.get_current_folder()
+         else:
+@@ -628,7 +629,7 @@ class AddTorrentDialog(component.Component):
+         dialog = self.glade.get_object("url_dialog")
+         entry = self.glade.get_object("entry_url")
+ 
+-        dialog.set_default_response(gtk.RESPONSE_OK)
++        dialog.set_default_response(Gtk.ResponseType.OK)
+         dialog.set_transient_for(self.dialog)
+         entry.grab_focus()
+ 
+@@ -643,7 +644,7 @@ class AddTorrentDialog(component.Component):
+                 text = ''
+             clip.CloseClipboard()
+         else:
+-            clip = gtk.clipboard_get(selection='PRIMARY')
++            clip = Gtk.Clipboard.get(Gdk.Atom.intern_static_string('PRIMARY'))
+             text = clip.wait_for_text()
+         if text:
+             text = text.strip()
+@@ -653,7 +654,7 @@ class AddTorrentDialog(component.Component):
+         dialog.show_all()
+         response = dialog.run()
+ 
+-        if response == gtk.RESPONSE_OK:
++        if response == Gtk.ResponseType.OK:
+             url = entry.get_text().decode("utf_8")
+         else:
+             url = None
+@@ -673,13 +674,13 @@ class AddTorrentDialog(component.Component):
+                 dialogs.ErrorDialog(_("Invalid URL"), "%s %s" % (url, _("is not a valid URL.")), self.dialog).run()
+ 
+     def add_from_url(self, url):
+-        dialog = gtk.Dialog(
++        dialog = Gtk.Dialog(
+             _("Downloading..."),
+-            flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_NO_SEPARATOR,
++            flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+             parent=self.dialog)
+         dialog.set_transient_for(self.dialog)
+ 
+-        pb = gtk.ProgressBar()
++        pb = Gtk.ProgressBar()
+         dialog.vbox.pack_start(pb, True, True)
+         dialog.show_all()
+ 
+@@ -728,12 +729,12 @@ class AddTorrentDialog(component.Component):
+         entry = self.glade.get_object("entry_hash")
+         textview = self.glade.get_object("text_trackers")
+ 
+-        dialog.set_default_response(gtk.RESPONSE_OK)
++        dialog.set_default_response(Gtk.ResponseType.OK)
+         dialog.set_transient_for(self.dialog)
+         entry.grab_focus()
+         dialog.show_all()
+         response = dialog.run()
+-        if response == gtk.RESPONSE_OK and len(entry.get_text()) == 40:
++        if response == Gtk.ResponseType.OK and len(entry.get_text()) == 40:
+             trackers = []
+             b = textview.get_buffer()
+             lines = b.get_text(b.get_start_iter(), b.get_end_iter()).strip().split("\n")
+@@ -886,7 +887,7 @@ class AddTorrentDialog(component.Component):
+                 split_text = new_text.split(os.path.sep)
+                 for s in split_text[:-1]:
+                     parent = self.files_treestore.append(parent,
+-                                [True, s, 0, -1, False, gtk.STOCK_DIRECTORY])
++                                [True, s, 0, -1, False, Gtk.STOCK_DIRECTORY])
+ 
+                 self.files_treestore[itr][1] = split_text[-1]
+                 common.reparent_iter(self.files_treestore, itr, parent)
+@@ -942,7 +943,7 @@ class AddTorrentDialog(component.Component):
+                     # We don't iterate over the last item because we'll just use
+                     # the existing itr and change the text
+                     parent = self.files_treestore.append(parent,
+-                                [True, s + os.path.sep, 0, -1, False, gtk.STOCK_DIRECTORY])
++                                [True, s + os.path.sep, 0, -1, False, Gtk.STOCK_DIRECTORY])
+ 
+                 self.files_treestore[itr][1] = split_text[-1] + os.path.sep
+ 
+diff --git a/deluge/ui/gtkui/builder/add_torrent_dialog.ui b/deluge/ui/gtkui/builder/add_torrent_dialog.ui
+index e01b0bb..cd06035 100644
+--- a/deluge/ui/gtkui/builder/add_torrent_dialog.ui
++++ b/deluge/ui/gtkui/builder/add_torrent_dialog.ui
+@@ -62,8 +62,6 @@
+                     <property name="visible">True</property>
+                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                     <property name="top_padding">5</property>
+-                    <property name="left_padding">12</property>
+-                    <property name="right_padding">12</property>
+                     <child>
+                       <object class="GtkVBox" id="vbox2">
+                         <property name="visible">True</property>
+@@ -76,17 +74,18 @@
+                             <property name="hscrollbar_policy">automatic</property>
+                             <property name="vscrollbar_policy">automatic</property>
+                             <property name="shadow_type">in</property>
++                            <property name="min_content_height">100</property>
+                             <child>
+                               <object class="GtkTreeView" id="listview_torrents">
+-                                <property name="height_request">100</property>
+                                 <property name="visible">True</property>
+                                 <property name="can_focus">True</property>
+-                                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                 <property name="headers_visible">False</property>
+                               </object>
+                             </child>
+                           </object>
+                           <packing>
++                            <property name="expand">True</property>
++                            <property name="fill">True</property>
+                             <property name="position">0</property>
+                           </packing>
+                         </child>
+@@ -321,7 +320,6 @@
+                     <property name="visible">True</property>
+                     <property name="can_focus">True</property>
+                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+-                    <property name="border_width">5</property>
+                     <property name="hscrollbar_policy">automatic</property>
+                     <property name="vscrollbar_policy">automatic</property>
+                     <property name="shadow_type">out</property>
+@@ -961,13 +959,14 @@
+                 </child>
+               </object>
+               <packing>
+-                <property name="resize">False</property>
+-                <property name="shrink">False</property>
++                <property name="resize">True</property>
++                <property name="shrink">True</property>
+               </packing>
+             </child>
+           </object>
+           <packing>
+             <property name="position">0</property>
++            <property name="expand">True</property>
+           </packing>
+         </child>
+         <child internal-child="action_area">
+diff --git a/deluge/ui/gtkui/builder/connection_manager.ui b/deluge/ui/gtkui/builder/connection_manager.ui
+index 801fd9e..446ef39 100644
+--- a/deluge/ui/gtkui/builder/connection_manager.ui
++++ b/deluge/ui/gtkui/builder/connection_manager.ui
+@@ -14,6 +14,7 @@
+     <property name="border_width">5</property>
+     <property name="title" translatable="yes">Add Host</property>
+     <property name="modal">True</property>
++    <property name="decorated">True</property>
+     <property name="window_position">GTK_WIN_POS_CENTER</property>
+     <property name="destroy_with_parent">True</property>
+     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+@@ -274,8 +275,9 @@
+                     <property name="visible">True</property>
+                     <property name="can_focus">True</property>
+                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+-                    <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+-                    <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
++                    <property name="hscrollbar_policy">automatic</property>
++                    <property name="vscrollbar_policy">automatic</property>
++                    <property name="min_content_height">100</property>
+                     <child>
+                       <object class="GtkTreeView" id="hostlist">
+                         <property name="visible">True</property>
+diff --git a/deluge/ui/gtkui/common.py b/deluge/ui/gtkui/common.py
+index 74e8884..a53770c 100644
+--- a/deluge/ui/gtkui/common.py
++++ b/deluge/ui/gtkui/common.py
+@@ -37,9 +37,10 @@
+ 
+ import os
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk
++import gi
++gi.require_version("Gtk", "3.0")
++gi.require_version('GConf', '2.0')
++from gi.repository import Gtk, GdkPixbuf
+ 
+ import pkg_resources
+ 
+@@ -52,10 +53,10 @@ def get_logo(size):
+     """Returns a deluge logo pixbuf based on the size parameter."""
+     try:
+         if deluge.common.windows_check() or deluge.common.osx_check():
+-            return gtk.gdk.pixbuf_new_from_file_at_size(deluge.common.get_pixmap("deluge.png"), \
++            return GdkPixbuf.Pixbuf.new_from_file_at_size(deluge.common.get_pixmap("deluge.png"), \
+                 size, size)
+         else:
+-            return gtk.gdk.pixbuf_new_from_file_at_size(deluge.common.get_pixmap("deluge.svg"), \
++            return GdkPixbuf.Pixbuf.new_from_file_at_size(deluge.common.get_pixmap("deluge.svg"), \
+                 size, size)
+     except Exception, e:
+         log.warning(e)
+@@ -72,7 +73,7 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
+     if activated_label is None:
+         activated_label = _("Activated")
+ 
+-    menu = gtk.Menu()
++    menu = Gtk.Menu()
+     group = None
+     if show_activated is False:
+         if pref_value > -1 and pref_value not in value_list:
+@@ -81,10 +82,10 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
+ 
+         for value in sorted(value_list):
+             if suffix != None:
+-                menuitem = gtk.RadioMenuItem(group, str(value) + " " + \
+-                    suffix)
++                menuitem = Gtk.RadioMenuItem(str(value) + " " + \
++                    suffix, group)
+             else:
+-                menuitem = gtk.RadioMenuItem(group, str(value))
++                menuitem = Gtk.RadioMenuItem(str(value), group)
+ 
+             group = menuitem
+ 
+@@ -98,7 +99,7 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
+ 
+     if show_activated is True:
+         for value in sorted(value_list):
+-            menuitem = gtk.RadioMenuItem(group, str(activated_label))
++            menuitem = Gtk.RadioMenuItem(str(activated_label), group)
+ 
+             group = menuitem
+ 
+@@ -111,7 +112,7 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
+             menu.append(menuitem)
+ 
+     if show_notset:
+-        menuitem = gtk.RadioMenuItem(group, notset_label)
++        menuitem = Gtk.RadioMenuItem(notset_label, group)
+         menuitem.set_name("unlimited")
+         if pref_value < notset_lessthan and pref_value != None:
+             menuitem.set_active(True)
+@@ -122,9 +123,9 @@ def build_menu_radio_list(value_list, callback, pref_value=None,
+ 
+     # Add the Other... menuitem
+     if show_other is True:
+-        menuitem = gtk.SeparatorMenuItem()
++        menuitem = Gtk.SeparatorMenuItem()
+         menu.append(menuitem)
+-        menuitem = gtk.MenuItem(_("Other..."))
++        menuitem = Gtk.MenuItem(_("Other..."))
+         menuitem.set_name("other")
+         menuitem.connect("activate", callback)
+         menu.append(menuitem)
+@@ -153,7 +154,7 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
+     if type(default) != int and type(default) != float:
+         raise TypeError("default value needs to be an int or float")
+ 
+-    glade = gtk.Builder()
++    glade = Gtk.Builder()
+     glade.add_from_file(
+         pkg_resources.resource_filename("deluge.ui.gtkui",
+                                     "builder/dgtkpopups.ui"))
+@@ -163,12 +164,12 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
+     glade.get_object("label_header").set_markup("<b>" + header + "</b>")
+     glade.get_object("label_type").set_text(type_str)
+     if image_stockid:
+-        glade.get_object("image").set_from_stock(image_stockid, gtk.ICON_SIZE_LARGE_TOOLBAR)
++        glade.get_object("image").set_from_stock(image_stockid, Gtk.IconSize.LARGE_TOOLBAR)
+     if image_filename:
+         # Hack for Windows since it doesn't support svg
+         if os.path.splitext(image_filename)[1] == ".svg" and (deluge.common.windows_check() or deluge.common.osx_check()):
+             image_filename = os.path.splitext(image_filename)[0] + "16.png"
+-        pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(
++        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+             deluge.common.get_pixmap(image_filename), 32, 32)
+         glade.get_object("image").set_from_pixbuf(pixbuf)
+ 
+@@ -182,7 +183,7 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
+ 
+     value = None
+     response = dialog.run()
+-    if response == gtk.RESPONSE_OK:
++    if response == Gtk.ResponseType.OK:
+         if type(default) == int:
+             value = spinbutton.get_value_as_int()
+         else:
+@@ -228,7 +229,7 @@ def get_deluge_icon():
+         return get_logo(32)
+     else:
+         try:
+-            icon_theme = gtk.icon_theme_get_default()
++            icon_theme = Gtk.IconTheme.get_default()
+             return icon_theme.load_icon("deluge", 64, 0)
+         except:
+             return get_logo(64)
+@@ -246,13 +247,13 @@ def associate_magnet_links(overwrite=False):
+     if not deluge.common.windows_check():
+         # gconf method is only available in a GNOME environment
+         try:
+-            import gconf
++            from gi.repository import GConf
+         except ImportError:
+             log.debug("gconf not available, so will not attempt to register magnet uri handler")
+             return False
+         else:
+             key = "/desktop/gnome/url-handlers/magnet/command"
+-            gconf_client = gconf.client_get_default()
++            gconf_client = GConf.Client.get_default()
+             if (gconf_client.get(key) and overwrite) or not gconf_client.get(key):
+                 # We are either going to overwrite the key, or do it if it hasn't been set yet
+                 if gconf_client.set_string(key, "deluge '%s'"):
+diff --git a/deluge/ui/gtkui/connectionmanager.py b/deluge/ui/gtkui/connectionmanager.py
+index 1d8dc26..ec6c396 100644
+--- a/deluge/ui/gtkui/connectionmanager.py
++++ b/deluge/ui/gtkui/connectionmanager.py
+@@ -33,7 +33,7 @@
+ #
+ #
+ 
+-import gtk
++from gi.repository import Gtk
+ import pkg_resources
+ import urlparse
+ import time
+@@ -108,7 +108,7 @@ class ConnectionManager(component.Component):
+     def stop(self):
+         # Close this dialog when we are shutting down
+         if self.running:
+-            self.connection_manager.response(gtk.RESPONSE_CLOSE)
++            self.connection_manager.response(Gtk.ResponseType.CLOSE)
+ 
+     def shutdown(self):
+         pass
+@@ -119,7 +119,7 @@ class ConnectionManager(component.Component):
+         Show the ConnectionManager dialog.
+         """
+         # Get the glade file for the connection manager
+-        self.glade = gtk.Builder()
++        self.glade = Gtk.Builder()
+         self.glade.add_from_file(
+                     pkg_resources.resource_filename("deluge.ui.gtkui",
+                                             "builder/connection_manager.ui"))
+@@ -137,26 +137,26 @@ class ConnectionManager(component.Component):
+ 
+         # Create status pixbufs
+         if not HOSTLIST_PIXBUFS:
+-            for stock_id in (gtk.STOCK_NO, gtk.STOCK_YES, gtk.STOCK_CONNECT):
+-                HOSTLIST_PIXBUFS.append(self.connection_manager.render_icon(stock_id, gtk.ICON_SIZE_MENU))
++            for stock_id in (Gtk.STOCK_NO, Gtk.STOCK_YES, Gtk.STOCK_CONNECT):
++                HOSTLIST_PIXBUFS.append(self.connection_manager.render_icon(stock_id, Gtk.IconSize.MENU))
+ 
+         # Create the host list gtkliststore
+         # id-hash, hostname, port, status, username, password, version
+-        self.liststore = gtk.ListStore(str, str, int, str, str, str, str)
++        self.liststore = Gtk.ListStore(str, str, int, str, str, str, str)
+ 
+         # Setup host list treeview
+         self.hostlist.set_model(self.liststore)
+-        render = gtk.CellRendererPixbuf()
+-        column = gtk.TreeViewColumn(_("Status"), render)
++        render = Gtk.CellRendererPixbuf()
++        column = Gtk.TreeViewColumn(_("Status"), render)
+         column.set_cell_data_func(render, cell_render_status, 3)
+         self.hostlist.append_column(column)
+-        render = gtk.CellRendererText()
+-        column = gtk.TreeViewColumn(_("Host"), render, text=HOSTLIST_COL_HOST)
++        render = Gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Host"), render, text=HOSTLIST_COL_HOST)
+         column.set_cell_data_func(render, cell_render_host, (1, 2, 4))
+         column.set_expand(True)
+         self.hostlist.append_column(column)
+-        render = gtk.CellRendererText()
+-        column = gtk.TreeViewColumn(_("Version"), render, text=HOSTLIST_COL_VERSION)
++        render = Gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Version"), render, text=HOSTLIST_COL_VERSION)
+         self.hostlist.append_column(column)
+ 
+         # Load any saved host entries
+@@ -347,7 +347,7 @@ class ConnectionManager(component.Component):
+             self.glade.get_object("button_connect").set_sensitive(False)
+             self.glade.get_object("button_removehost").set_sensitive(False)
+             self.glade.get_object("image_startdaemon").set_from_stock(
+-                gtk.STOCK_EXECUTE, gtk.ICON_SIZE_MENU)
++                Gtk.STOCK_EXECUTE, Gtk.IconSize.MENU)
+             self.glade.get_object("label_startdaemon").set_text("_Start Daemon")
+ 
+         model, row = self.hostlist.get_selection().get_selected()
+@@ -382,7 +382,7 @@ class ConnectionManager(component.Component):
+         # Check to see if the host is online
+         if status == "Connected" or status == "Online":
+             self.glade.get_object("image_startdaemon").set_from_stock(
+-                gtk.STOCK_STOP, gtk.ICON_SIZE_MENU)
++                Gtk.STOCK_STOP, Gtk.IconSize.MENU)
+             self.glade.get_object("label_startdaemon").set_text(
+                 _("_Stop Daemon"))
+ 
+@@ -390,7 +390,7 @@ class ConnectionManager(component.Component):
+         if localhost and status == "Offline":
+             # The localhost is not online
+             self.glade.get_object("image_startdaemon").set_from_stock(
+-                gtk.STOCK_EXECUTE, gtk.ICON_SIZE_MENU)
++                Gtk.STOCK_EXECUTE, Gtk.IconSize.MENU)
+             self.glade.get_object("label_startdaemon").set_text(
+                 _("_Start Daemon"))
+ 
+@@ -483,16 +483,16 @@ that you forgot to install the deluged package or it's not in your PATH.")).run(
+         else:
+             do_connect()
+ 
+-        self.connection_manager.response(gtk.RESPONSE_OK)
++        self.connection_manager.response(Gtk.ResponseType.OK)
+ 
+     def on_button_close_clicked(self, widget):
+-        self.connection_manager.response(gtk.RESPONSE_CLOSE)
++        self.connection_manager.response(Gtk.ResponseType.CLOSE)
+ 
+     def on_button_addhost_clicked(self, widget):
+         log.debug("on_button_addhost_clicked")
+         dialog = self.glade.get_object("addhost_dialog")
+         dialog.set_transient_for(self.connection_manager)
+-        dialog.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
++        dialog.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
+         hostname_entry = self.glade.get_object("entry_hostname")
+         port_spinbutton = self.glade.get_object("spinbutton_port")
+         username_entry = self.glade.get_object("entry_username")
+diff --git a/deluge/ui/gtkui/createtorrentdialog.py b/deluge/ui/gtkui/createtorrentdialog.py
+index bd6a1a6..1359288 100644
+--- a/deluge/ui/gtkui/createtorrentdialog.py
++++ b/deluge/ui/gtkui/createtorrentdialog.py
+@@ -34,11 +34,11 @@
+ #
+ 
+ 
+-import gtk
++from gi.repository import Gtk
+ import sys
+ import pkg_resources
+ import os.path
+-import gobject
++from gi.repository import GObject
+ import base64
+ 
+ from twisted.internet.threads import deferToThread
+@@ -52,7 +52,7 @@ from deluge.log import LOG as log
+ 
+ class CreateTorrentDialog:
+     def show(self):
+-        self.glade = gtk.Builder()
++        self.glade = Gtk.Builder()
+         self.glade.add_from_file(
+             pkg_resources.resource_filename(
+                 "deluge.ui.gtkui",
+@@ -76,21 +76,21 @@ class CreateTorrentDialog:
+         })
+ 
+         # path, icon, size
+-        self.files_treestore = gtk.TreeStore(str, str, gobject.TYPE_UINT64)
++        self.files_treestore = Gtk.TreeStore(str, str, GObject.TYPE_UINT64)
+ 
+-        column = gtk.TreeViewColumn(_("Filename"))
+-        render = gtk.CellRendererPixbuf()
++        column = Gtk.TreeViewColumn(_("Filename"))
++        render = Gtk.CellRendererPixbuf()
+         column.pack_start(render, False)
+         column.add_attribute(render, "stock-id", 1)
+-        render = gtk.CellRendererText()
++        render = Gtk.CellRendererText()
+         column.pack_start(render, True)
+         column.add_attribute(render, "text", 0)
+         column.set_expand(True)
+         self.glade.get_object("treeview_files").append_column(column)
+ 
+-        column = gtk.TreeViewColumn(_("Size"))
+-        render = gtk.CellRendererText()
+-        column.pack_start(render)
++        column = Gtk.TreeViewColumn(_("Size"))
++        render = Gtk.CellRendererText()
++        column.pack_start(render, True)
+         column.set_cell_data_func(render, listview.cell_data_size, 2)
+         self.glade.get_object("treeview_files").append_column(column)
+ 
+@@ -98,15 +98,15 @@ class CreateTorrentDialog:
+         self.glade.get_object("treeview_files").set_show_expanders(False)
+ 
+         # tier, url
+-        self.trackers_liststore = gtk.ListStore(int, str)
++        self.trackers_liststore = Gtk.ListStore(int, str)
+ 
+         self.glade.get_object("tracker_treeview").append_column(
+-            gtk.TreeViewColumn(_("Tier"), gtk.CellRendererText(), text=0))
++            Gtk.TreeViewColumn(_("Tier"), Gtk.CellRendererText(), text=0))
+         self.glade.get_object("tracker_treeview").append_column(
+-            gtk.TreeViewColumn(_("Tracker"), gtk.CellRendererText(), text=1))
++            Gtk.TreeViewColumn(_("Tracker"), Gtk.CellRendererText(), text=1))
+ 
+         self.glade.get_object("tracker_treeview").set_model(self.trackers_liststore)
+-        self.trackers_liststore.set_sort_column_id(0, gtk.SORT_ASCENDING)
++        self.trackers_liststore.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+ 
+         if not client.is_localhost() and client.connected():
+             self.glade.get_object("button_remote_path").show()
+@@ -141,11 +141,11 @@ class CreateTorrentDialog:
+     def _on_button_file_clicked(self, widget):
+         log.debug("_on_button_file_clicked")
+         # Setup the filechooserdialog
+-        chooser = gtk.FileChooserDialog(_("Choose a file"),
++        chooser = Gtk.FileChooserDialog(_("Choose a file"),
+             self.dialog,
+-            gtk.FILE_CHOOSER_ACTION_OPEN,
+-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN,
+-                        gtk.RESPONSE_OK))
++            Gtk.FileChooserAction.OPEN,
++            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,
++                        Gtk.ResponseType.OK))
+ 
+         chooser.set_transient_for(self.dialog)
+         chooser.set_select_multiple(False)
+@@ -154,7 +154,7 @@ class CreateTorrentDialog:
+         # Run the dialog
+         response = chooser.run()
+ 
+-        if response == gtk.RESPONSE_OK:
++        if response == Gtk.ResponseType.OK:
+             result = chooser.get_filename()
+         else:
+             chooser.destroy()
+@@ -163,18 +163,18 @@ class CreateTorrentDialog:
+         path = result.decode('utf-8')
+ 
+         self.files_treestore.clear()
+-        self.files_treestore.append(None, [result, gtk.STOCK_FILE, deluge.common.get_path_size(path)])
++        self.files_treestore.append(None, [result, Gtk.STOCK_FILE, deluge.common.get_path_size(path)])
+         self.adjust_piece_size()
+         chooser.destroy()
+ 
+     def _on_button_folder_clicked(self, widget):
+         log.debug("_on_button_folder_clicked")
+         # Setup the filechooserdialog
+-        chooser = gtk.FileChooserDialog(_("Choose a folder"),
++        chooser = Gtk.FileChooserDialog(_("Choose a folder"),
+             self.dialog,
+-            gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
+-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN,
+-                        gtk.RESPONSE_OK))
++            Gtk.FileChooserAction.SELECT_FOLDER,
++            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,
++                        Gtk.ResponseType.OK))
+ 
+         chooser.set_transient_for(self.dialog)
+         chooser.set_select_multiple(False)
+@@ -182,7 +182,7 @@ class CreateTorrentDialog:
+         # Run the dialog
+         response = chooser.run()
+ 
+-        if response == gtk.RESPONSE_OK:
++        if response == Gtk.ResponseType.OK:
+             result = chooser.get_filename()
+         else:
+             chooser.destroy()
+@@ -191,7 +191,7 @@ class CreateTorrentDialog:
+         path = result.decode('utf-8')
+ 
+         self.files_treestore.clear()
+-        self.files_treestore.append(None, [result, gtk.STOCK_OPEN, deluge.common.get_path_size(path)])
++        self.files_treestore.append(None, [result, Gtk.STOCK_OPEN, deluge.common.get_path_size(path)])
+         self.adjust_piece_size()
+         chooser.destroy()
+ 
+@@ -204,13 +204,13 @@ class CreateTorrentDialog:
+         entry.grab_focus()
+         response = dialog.run()
+ 
+-        if response == gtk.RESPONSE_OK:
++        if response == Gtk.ResponseType.OK:
+             result = entry.get_text()
+             def _on_get_path_size(size):
+                 log.debug("size: %s", size)
+                 if size > 0:
+                     self.files_treestore.clear()
+-                    self.files_treestore.append(None, [result, gtk.STOCK_NETWORK, size])
++                    self.files_treestore.append(None, [result, Gtk.STOCK_NETWORK, size])
+                     self.adjust_piece_size()
+             client.core.get_path_size(result).addCallback(_on_get_path_size)
+             client.force_call(True)
+@@ -226,14 +226,14 @@ class CreateTorrentDialog:
+         if len(self.files_treestore) == 0:
+             return
+ 
+-        is_remote = self.files_treestore[0][1] == gtk.STOCK_NETWORK
++        is_remote = self.files_treestore[0][1] == Gtk.STOCK_NETWORK
+         if is_remote:
+             # This is a remote path
+             dialog = self.glade.get_object("remote_save_dialog")
+             dialog_save_path = self.glade.get_object("entry_save_path")
+             dialog_save_path.set_text(self.files_treestore[0][0].rstrip("\\/") + ".torrent")
+             response = dialog.run()
+-            if response == gtk.RESPONSE_OK:
++            if response == Gtk.ResponseType.OK:
+                 result = dialog_save_path.get_text()
+             else:
+                 dialog.hide()
+@@ -241,22 +241,22 @@ class CreateTorrentDialog:
+             dialog.hide()
+         else:
+             # Setup the filechooserdialog
+-            chooser = gtk.FileChooserDialog(_("Save .torrent file"),
++            chooser = Gtk.FileChooserDialog(_("Save .torrent file"),
+                 self.dialog,
+-                gtk.FILE_CHOOSER_ACTION_SAVE,
+-                buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_SAVE,
+-                            gtk.RESPONSE_OK))
++                Gtk.FileChooserAction.SAVE,
++                buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE,
++                            Gtk.ResponseType.OK))
+ 
+             chooser.set_transient_for(self.dialog)
+             chooser.set_select_multiple(False)
+             chooser.set_property("skip-taskbar-hint", True)
+ 
+             # Add .torrent and * file filters
+-            file_filter = gtk.FileFilter()
++            file_filter = Gtk.FileFilter()
+             file_filter.set_name(_("Torrent files"))
+             file_filter.add_pattern("*." + "torrent")
+             chooser.add_filter(file_filter)
+-            file_filter = gtk.FileFilter()
++            file_filter = Gtk.FileFilter()
+             file_filter.set_name(_("All files"))
+             file_filter.add_pattern("*")
+             chooser.add_filter(file_filter)
+@@ -265,7 +265,7 @@ class CreateTorrentDialog:
+             # Run the dialog
+             response = chooser.run()
+ 
+-            if response == gtk.RESPONSE_OK:
++            if response == Gtk.ResponseType.OK:
+                 result = chooser.get_filename()
+             else:
+                 chooser.destroy()
+@@ -396,7 +396,7 @@ class CreateTorrentDialog:
+ 
+     def _on_button_add_clicked(self, widget):
+         log.debug("_on_button_add_clicked")
+-        glade = gtk.Builder()
++        glade = Gtk.Builder()
+         glade.add_from_file(
+             pkg_resources.resource_filename(
+                 "deluge.ui.gtkui",
+@@ -411,7 +411,7 @@ class CreateTorrentDialog:
+         textview.grab_focus()
+         response = dialog.run()
+ 
+-        if response == gtk.RESPONSE_OK:
++        if response == Gtk.ResponseType.OK:
+             # Create a list of trackers from the textview buffer
+             trackers = []
+             b = textview.get_buffer()
+diff --git a/deluge/ui/gtkui/details_tab.py b/deluge/ui/gtkui/details_tab.py
+index 6056856..402ac08 100644
+--- a/deluge/ui/gtkui/details_tab.py
++++ b/deluge/ui/gtkui/details_tab.py
+@@ -34,7 +34,7 @@
+ #
+ 
+ 
+-import gtk
++from gi.repository import Gtk
+ 
+ from deluge.ui.client import client
+ import deluge.component as component
+diff --git a/deluge/ui/gtkui/dialogs.py b/deluge/ui/gtkui/dialogs.py
+index 89f5eb4..f12eb7c 100644
+--- a/deluge/ui/gtkui/dialogs.py
++++ b/deluge/ui/gtkui/dialogs.py
+@@ -32,14 +32,14 @@
+ #    statement from all source files in the program, then also delete it here.
+ #
+ 
+-import gtk
++from gi.repository import Gtk
+ 
+ from twisted.internet import defer
+ 
+ import deluge.component as component
+ 
+ 
+-class BaseDialog(gtk.Dialog):
++class BaseDialog(Gtk.Dialog):
+     """
+     Base dialog class that should be used with all dialogs.
+     """
+@@ -55,7 +55,7 @@ class BaseDialog(gtk.Dialog):
+         super(BaseDialog, self).__init__(
+             title="",
+             parent=parent if parent else component.get("MainWindow").window,
+-            flags=gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT | gtk.DIALOG_NO_SEPARATOR,
++            flags=Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+             buttons=buttons)
+ 
+         self.connect("delete-event", self._on_delete_event)
+@@ -64,29 +64,29 @@ class BaseDialog(gtk.Dialog):
+         # Setup all the formatting and such to make our dialog look pretty
+         self.set_border_width(5)
+         self.set_default_size(200, 100)
+-        hbox = gtk.HBox(spacing=5)
+-        image = gtk.Image()
+-        image.set_from_stock(icon, gtk.ICON_SIZE_DIALOG)
++        hbox = Gtk.HBox(spacing=5)
++        image = Gtk.Image()
++        image.set_from_stock(icon, Gtk.IconSize.DIALOG)
+         image.set_alignment(0.5, 0.0)
+-        hbox.pack_start(image, False, False)
+-        vbox = gtk.VBox(spacing=5)
+-        label = gtk.Label("<b><big>" + header + "</big></b>")
++        hbox.pack_start(image, False, False, 0)
++        vbox = Gtk.VBox(spacing=5)
++        label = Gtk.Label(label="<b><big>" + header + "</big></b>")
+         label.set_use_markup(True)
+         label.set_alignment(0.0, 0.5)
+         label.set_line_wrap(True)
+-        vbox.pack_start(label, False, False)
+-        tlabel = gtk.Label(text)
++        vbox.pack_start(label, False, False, 0)
++        tlabel = Gtk.Label(label=text)
+         tlabel.set_use_markup(True)
+         tlabel.set_line_wrap(True)
+         tlabel.set_alignment(0.0, 0.5)
+-        vbox.pack_start(tlabel, False, False)
+-        hbox.pack_start(vbox, False, False)
+-        self.vbox.pack_start(hbox, False, False)
++        vbox.pack_start(tlabel, False, False, 0)
++        hbox.pack_start(vbox, False, False, 0)
++        self.vbox.pack_start(hbox, False, False, 0)
+         self.vbox.set_spacing(5)
+         self.vbox.show_all()
+ 
+     def _on_delete_event(self, widget, event):
+-        self.deferred.callback(gtk.RESPONSE_DELETE_EVENT)
++        self.deferred.callback(Gtk.ResponseType.DELETE_EVENT)
+         self.destroy()
+ 
+     def _on_response(self, widget, response):
+@@ -106,7 +106,7 @@ class YesNoDialog(BaseDialog):
+     """
+     Displays a dialog asking the user to select Yes or No to a question.
+ 
+-    When run(), it will return either a gtk.RESPONSE_YES or a gtk.RESPONSE_NO.
++    When run(), it will return either a Gtk.ResponseType.YES or a Gtk.ResponseType.NO.
+ 
+     """
+     def __init__(self, header, text, parent=None):
+@@ -118,15 +118,15 @@ class YesNoDialog(BaseDialog):
+         super(YesNoDialog, self).__init__(
+             header,
+             text,
+-            gtk.STOCK_DIALOG_QUESTION,
+-            (gtk.STOCK_YES, gtk.RESPONSE_YES, gtk.STOCK_NO, gtk.RESPONSE_NO),
++            Gtk.STOCK_DIALOG_QUESTION,
++            (Gtk.STOCK_YES, Gtk.ResponseType.YES, Gtk.STOCK_NO, Gtk.ResponseType.NO),
+             parent)
+ 
+ class InformationDialog(BaseDialog):
+     """
+     Displays an information dialog.
+ 
+-    When run(), it will return a gtk.RESPONSE_CLOSE.
++    When run(), it will return a Gtk.ResponseType.CLOSE.
+     """
+     def __init__(self, header, text, parent=None):
+         """
+@@ -137,15 +137,15 @@ class InformationDialog(BaseDialog):
+         super(InformationDialog, self).__init__(
+             header,
+             text,
+-            gtk.STOCK_DIALOG_INFO,
+-            (gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE),
++            Gtk.STOCK_DIALOG_INFO,
++            (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE),
+             parent)
+ 
+ class ErrorDialog(BaseDialog):
+     """
+     Displays an error dialog with optional details text for more information.
+ 
+-    When run(), it will return a gtk.RESPONSE_CLOSE.
++    When run(), it will return a Gtk.ResponseType.CLOSE.
+     """
+     def __init__(self, header, text, parent=None, details=None):
+         """
+@@ -158,30 +158,30 @@ class ErrorDialog(BaseDialog):
+         super(ErrorDialog, self).__init__(
+             header,
+             text,
+-            gtk.STOCK_DIALOG_ERROR,
+-            (gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE),
++            Gtk.STOCK_DIALOG_ERROR,
++            (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE),
+             parent)
+ 
+         if details:
+             self.set_default_size(500, 400)
+-            textview = gtk.TextView()
++            textview = Gtk.TextView()
+             textview.set_editable(False)
+             textview.get_buffer().set_text(details)
+-            sw = gtk.ScrolledWindow()
+-            sw.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+-            sw.set_shadow_type(gtk.SHADOW_IN)
++            sw = Gtk.ScrolledWindow()
++            sw.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
++            sw.set_shadow_type(Gtk.ShadowType.IN)
+             sw.add(textview)
+-            label = gtk.Label(_("Details:"))
++            label = Gtk.Label(label=_("Details:"))
+             label.set_alignment(0.0, 0.5)
+             self.vbox.pack_start(label, False, False)
+-            self.vbox.pack_start(sw)
++            self.vbox.pack_start(sw, True, True, 0)
+             self.vbox.show_all()
+ 
+ class PasswordDialog(BaseDialog):
+     """
+     Displays a dialog with an entry field asking for a password.
+ 
+-    When run(), it will return either a gtk.RESPONSE_CANCEL or a gtk.RESPONSE_OK.
++    When run(), it will return either a Gtk.ResponseType.CANCEL or a Gtk.ResponseType.OK.
+     """
+     def __init__(self, password_msg="", parent=None):
+         """
+@@ -190,16 +190,16 @@ class PasswordDialog(BaseDialog):
+         """
+         super(PasswordDialog, self).__init__(
+             _("Password Protected"), password_msg,
+-            gtk.STOCK_DIALOG_AUTHENTICATION,
+-            (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_CONNECT, gtk.RESPONSE_OK),
++            Gtk.STOCK_DIALOG_AUTHENTICATION,
++            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_CONNECT, Gtk.ResponseType.OK),
+             parent)
+ 
+-        table = gtk.Table(1, 2, False)
+-        self.password_label = gtk.Label()
++        table = Gtk.Table(1, 2, False)
++        self.password_label = Gtk.Label()
+         self.password_label.set_markup("<b>" + _("Password:") + "</b>")
+         self.password_label.set_alignment(1.0, 0.5)
+         self.password_label.set_padding(5, 5)
+-        self.password_entry = gtk.Entry()
++        self.password_entry = Gtk.Entry()
+         self.password_entry.set_visibility(False)
+         self.password_entry.connect("activate", self.on_password_activate)
+         table.attach(self.password_label, 0, 1, 1, 2)
+@@ -213,4 +213,4 @@ class PasswordDialog(BaseDialog):
+         return self.password_entry.get_text()
+ 
+     def on_password_activate(self, widget):
+-        self.response(gtk.RESPONSE_OK)
++        self.response(Gtk.ResponseType.OK)
+diff --git a/deluge/ui/gtkui/edittrackersdialog.py b/deluge/ui/gtkui/edittrackersdialog.py
+index 56a0b9a..003ce6d 100644
+--- a/deluge/ui/gtkui/edittrackersdialog.py
++++ b/deluge/ui/gtkui/edittrackersdialog.py
+@@ -34,7 +34,7 @@
+ #
+ 
+ 
+-import gtk
++from gi.repository import Gtk
+ import pkg_resources
+ 
+ import deluge.common
+@@ -46,7 +46,7 @@ from deluge.log import LOG as log
+ class EditTrackersDialog:
+     def __init__(self, torrent_id, parent=None):
+         self.torrent_id = torrent_id
+-        self.glade = gtk.Builder()
++        self.glade = Gtk.Builder()
+         self.glade.add_from_file(
+                     pkg_resources.resource_filename("deluge.ui.gtkui",
+                                             "builder/edit_trackers.ui"))
+@@ -78,16 +78,16 @@ class EditTrackersDialog:
+         })
+ 
+         # Create a liststore for tier, url
+-        self.liststore = gtk.ListStore(int, str)
++        self.liststore = Gtk.ListStore(int, str)
+ 
+         # Create the columns
+         self.treeview.append_column(
+-            gtk.TreeViewColumn(_("Tier"), gtk.CellRendererText(), text=0))
++            Gtk.TreeViewColumn(_("Tier"), Gtk.CellRendererText(), text=0))
+         self.treeview.append_column(
+-            gtk.TreeViewColumn(_("Tracker"), gtk.CellRendererText(), text=1))
++            Gtk.TreeViewColumn(_("Tracker"), Gtk.CellRendererText(), text=1))
+ 
+         self.treeview.set_model(self.liststore)
+-        self.liststore.set_sort_column_id(0, gtk.SORT_ASCENDING)
++        self.liststore.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+ 
+     def run(self):
+         # Make sure we have a torrent_id.. if not just return
+@@ -101,8 +101,10 @@ class EditTrackersDialog:
+ 
+     def _on_get_torrent_status(self, status):
+         """Display trackers dialog"""
+-        for tracker in status["trackers"]:
+-            self.add_tracker(tracker["tier"], tracker["url"])
++
++        if 'trackers' in status:
++            for tracker in status["trackers"]:
++                self.add_tracker(tracker["tier"], tracker["url"])
+ 
+         self.dialog.show()
+ 
+@@ -224,6 +226,6 @@ class EditTrackersDialog:
+     def on_button_add_cancel_clicked(self, widget):
+         log.debug("on_button_add_cancel_clicked")
+         # Clear the entry widget and hide the dialog
+-        b = gtk.TextBuffer()
++        b = Gtk.TextBuffer()
+         self.glade.get_object("textview_trackers").set_buffer(b)
+         self.add_tracker_dialog.hide()
+diff --git a/deluge/ui/gtkui/files_tab.py b/deluge/ui/gtkui/files_tab.py
+index b253c2c..a40270c 100644
+--- a/deluge/ui/gtkui/files_tab.py
++++ b/deluge/ui/gtkui/files_tab.py
+@@ -34,8 +34,8 @@
+ #
+ 
+ 
+-import gtk, gtk.gdk
+-import gobject
++from gi.repository import Gtk, Gdk
++from gi.repository import GObject
+ import gettext
+ import os.path
+ import cPickle
+@@ -81,13 +81,13 @@ def cell_priority_icon(column, cell, model, row, data):
+         return
+     priority = model.get_value(row, data)
+     if deluge.common.FILE_PRIORITY[priority] == "Do Not Download":
+-        cell.set_property("stock-id", gtk.STOCK_NO)
++        cell.set_property("stock-id", Gtk.STOCK_NO)
+     elif deluge.common.FILE_PRIORITY[priority] == "Normal Priority":
+-        cell.set_property("stock-id", gtk.STOCK_YES)
++        cell.set_property("stock-id", Gtk.STOCK_YES)
+     elif deluge.common.FILE_PRIORITY[priority] == "High Priority":
+-        cell.set_property("stock-id", gtk.STOCK_GO_UP)
++        cell.set_property("stock-id", Gtk.STOCK_GO_UP)
+     elif deluge.common.FILE_PRIORITY[priority] == "Highest Priority":
+-        cell.set_property("stock-id", gtk.STOCK_GOTO_TOP)
++        cell.set_property("stock-id", Gtk.STOCK_GOTO_TOP)
+ 
+ def cell_filename(column, cell, model, row, data):
+     """Only show the tail portion of the file path"""
+@@ -113,7 +113,7 @@ class FilesTab(Tab):
+ 
+         self.listview = glade.get_object("files_listview")
+         # filename, size, progress string, progress value, priority, file index, icon id
+-        self.treestore = gtk.TreeStore(str, gobject.TYPE_UINT64, str, float, int, int, str)
++        self.treestore = Gtk.TreeStore(str, GObject.TYPE_UINT64, str, float, int, int, str)
+ 
+         # We need to store the row that's being edited to prevent updating it until
+         # it's been done editing
+@@ -121,11 +121,11 @@ class FilesTab(Tab):
+ 
+         # Filename column
+         self.filename_column_name = _("Filename")
+-        column = gtk.TreeViewColumn(self.filename_column_name)
+-        render = gtk.CellRendererPixbuf()
++        column = Gtk.TreeViewColumn(self.filename_column_name)
++        render = Gtk.CellRendererPixbuf()
+         column.pack_start(render, False)
+         column.add_attribute(render, "stock-id", 6)
+-        render = gtk.CellRendererText()
++        render = Gtk.CellRendererText()
+         render.set_property("editable", True)
+         render.connect("edited", self._on_filename_edited)
+         render.connect("editing-started", self._on_filename_editing_start)
+@@ -141,8 +141,8 @@ class FilesTab(Tab):
+         self.listview.append_column(column)
+ 
+         # Size column
+-        column = gtk.TreeViewColumn(_("Size"))
+-        render = gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Size"))
++        render = Gtk.CellRendererText()
+         column.pack_start(render, False)
+         column.set_cell_data_func(render, deluge.ui.gtkui.listview.cell_data_size, 1)
+         column.set_sort_column_id(1)
+@@ -154,9 +154,9 @@ class FilesTab(Tab):
+         self.listview.append_column(column)
+ 
+         # Progress column
+-        column = gtk.TreeViewColumn(_("Progress"))
+-        render = gtk.CellRendererProgress()
+-        column.pack_start(render)
++        column = Gtk.TreeViewColumn(_("Progress"))
++        render = Gtk.CellRendererProgress()
++        column.pack_start(render, True)
+         column.set_cell_data_func(render, cell_progress, (2, 3))
+         column.set_sort_column_id(3)
+         column.set_clickable(True)
+@@ -167,11 +167,11 @@ class FilesTab(Tab):
+         self.listview.append_column(column)
+ 
+         # Priority column
+-        column = gtk.TreeViewColumn(_("Priority"))
+-        render = gtk.CellRendererPixbuf()
++        column = Gtk.TreeViewColumn(_("Priority"))
++        render = Gtk.CellRendererPixbuf()
+         column.pack_start(render, False)
+         column.set_cell_data_func(render, cell_priority_icon, 4)
+-        render = gtk.CellRendererText()
++        render = Gtk.CellRendererText()
+         column.pack_start(render, False)
+         column.set_cell_data_func(render, cell_priority, 4)
+         column.set_sort_column_id(4)
+@@ -186,7 +186,7 @@ class FilesTab(Tab):
+ 
+         self.listview.set_model(self.treestore)
+ 
+-        self.listview.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
++        self.listview.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
+ 
+         self.file_menu = glade.get_object("menu_file_tab")
+         self.file_menu_priority_items = [
+@@ -207,10 +207,10 @@ class FilesTab(Tab):
+         self.listview.connect("button-press-event", self._on_button_press_event)
+ 
+         self.listview.enable_model_drag_source(
+-            gtk.gdk.BUTTON1_MASK,
++            Gdk.ModifierType.BUTTON1_MASK,
+             [('text/plain', 0, 0)],
+-            gtk.gdk.ACTION_DEFAULT | gtk.gdk.ACTION_MOVE)
+-        self.listview.enable_model_drag_dest([('text/plain', 0, 0)], gtk.gdk.ACTION_DEFAULT)
++            Gdk.DragAction.DEFAULT | Gdk.DragAction.MOVE)
++        self.listview.enable_model_drag_dest([('text/plain', 0, 0)], Gdk.DragAction.DEFAULT)
+ 
+         self.listview.connect("drag_data_get", self._on_drag_data_get_data)
+         self.listview.connect("drag_data_received", self._on_drag_data_received_data)
+@@ -295,7 +295,7 @@ class FilesTab(Tab):
+             cname = column.get_title()
+             if state["columns"].has_key(cname):
+                 cstate = state["columns"][cname]
+-                column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
++                column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+                 column.set_fixed_width(cstate["width"] if cstate["width"] > 0 else 10)
+                 if state["sort_id"] == index and state["sort_order"] is not None:
+                     column.set_sort_indicator(True)
+@@ -362,7 +362,7 @@ class FilesTab(Tab):
+             path = self.get_file_path(select).split("/")
+             filepath = os.path.join(status["save_path"], *path)
+             log.debug("Open file '%s'", filepath)
+-            timestamp = gtk.get_current_event_time()
++            timestamp = Gtk.get_current_event_time()
+             deluge.common.open_file(filepath, timestamp=timestamp)
+ 
+     ## The following 3 methods create the folder/file view in the treeview
+@@ -390,13 +390,13 @@ class FilesTab(Tab):
+         for key,value in split_files.iteritems():
+             if key.endswith("/"):
+                 chunk_iter = self.treestore.append(parent_iter,
+-                                [key, 0, "", 0, 0, -1, gtk.STOCK_DIRECTORY])
++                                [key, 0, "", 0, 0, -1, Gtk.STOCK_DIRECTORY])
+                 chunk_size = self.add_files(chunk_iter, value)
+                 self.treestore.set(chunk_iter, 1, chunk_size)
+                 ret += chunk_size
+             else:
+                 self.treestore.append(parent_iter, [key,
+-                                        value[1]["size"], "", 0, 0, value[0], gtk.STOCK_FILE])
++                                        value[1]["size"], "", 0, 0, value[0], Gtk.STOCK_FILE])
+                 ret += value[1]["size"]
+         return ret
+     ###
+@@ -530,7 +530,7 @@ class FilesTab(Tab):
+             return True
+ 
+     def _on_key_press_event(self, widget, event):
+-        keyname = gtk.gdk.keyval_name(event.keyval)
++        keyname = Gdk.keyval_name(event.keyval)
+         if keyname is not None:
+             func = getattr(self, 'keypress_' + keyname, None)
+             selected_rows = self.listview.get_selection().get_selected_rows()[1]
+@@ -684,7 +684,7 @@ class FilesTab(Tab):
+                                     child_iter = self.treestore.iter_next(child_iter)
+                                 if create:
+                                     parent_iter = self.treestore.append(parent_iter,
+-                                                [tc + "/", 0, "", 0, 0, -1, gtk.STOCK_DIRECTORY])
++                                                [tc + "/", 0, "", 0, 0, -1, Gtk.STOCK_DIRECTORY])
+ 
+                             # Find the iter for the file that needs to be moved
+                             def get_file_iter(model, path, itr, user_data):
+@@ -712,7 +712,7 @@ class FilesTab(Tab):
+                     parent_iter = None
+                     for f in new_folders:
+                         parent_iter = self.treestore.append(parent_iter,
+-                                                [f + "/", 0, "", 0, 0, -1, gtk.STOCK_DIRECTORY])
++                                                [f + "/", 0, "", 0, 0, -1, Gtk.STOCK_DIRECTORY])
+                     child = self.get_iter_at_path(old_name)
+                     self.treestore.append(
+                         parent_iter,
+@@ -813,7 +813,7 @@ class FilesTab(Tab):
+             else:
+                 parent = old_folder_iter_parent
+                 for ns in new_split[:-1]:
+-                    parent = self.treestore.append(parent, [ns + "/", 0, "", 0, 0, -1, gtk.STOCK_DIRECTORY])
++                    parent = self.treestore.append(parent, [ns + "/", 0, "", 0, 0, -1, Gtk.STOCK_DIRECTORY])
+ 
+                 self.treestore[old_folder_iter][0] = new_split[-1] + "/"
+                 common.reparent_iter(self.treestore, old_folder_iter, parent)
+diff --git a/deluge/ui/gtkui/filtertreeview.py b/deluge/ui/gtkui/filtertreeview.py
+index f68a1e8..e4ca117 100644
+--- a/deluge/ui/gtkui/filtertreeview.py
++++ b/deluge/ui/gtkui/filtertreeview.py
+@@ -35,7 +35,7 @@
+ #
+ 
+ 
+-import gtk
++from gi.repository import Gtk, GdkPixbuf
+ import pkg_resources
+ import warnings
+ from gobject import GError
+@@ -101,14 +101,14 @@ class FilterTreeView(component.Component):
+         self.config = ConfigManager("gtkui.conf")
+         self.tracker_icons = component.get("TrackerIcons")
+ 
+-        self.label_view = gtk.TreeView()
++        self.label_view = Gtk.TreeView()
+         self.sidebar.add_tab(self.label_view, "filters", "Filters")
+ 
+         #set filter to all when hidden:
+         self.sidebar.notebook.connect("hide", self._on_hide)
+ 
+         #menu
+-        glade_menu = gtk.Builder()
++        glade_menu = Gtk.Builder()
+         glade_menu.add_from_file(pkg_resources.resource_filename("deluge.ui.gtkui",
+             "builder/filtertree_menu.ui"))
+         self.menu = glade_menu.get_object("filtertree_menu")
+@@ -122,17 +122,17 @@ class FilterTreeView(component.Component):
+ 
+         # Create the liststore
+         #cat, value, label, count, pixmap, visible
+-        self.treestore = gtk.TreeStore(str, str, str, int, gtk.gdk.Pixbuf, bool)
++        self.treestore = Gtk.TreeStore(str, str, str, int, GdkPixbuf.Pixbuf, bool)
+ 
+         # Create the column
+-        column = gtk.TreeViewColumn("Filters")
+-        column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
+-        render = gtk.CellRendererPixbuf()
++        column = Gtk.TreeViewColumn("Filters")
++        column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
++        render = Gtk.CellRendererPixbuf()
+         self.renderpix = render
+-        column.pack_start(render, expand=False)
++        column.pack_start(render, False)
+         column.add_attribute(render, 'pixbuf', 4)
+-        render = gtk.CellRendererText()
+-        column.pack_start(render, expand=False)
++        render = Gtk.CellRendererText()
++        column.pack_start(render, False)
+         column.set_cell_data_func(render, self.render_cell_data,None)
+ 
+         self.label_view.append_column(column)
+@@ -140,10 +140,9 @@ class FilterTreeView(component.Component):
+         #style:
+         self.label_view.set_show_expanders(True)
+         self.label_view.set_headers_visible(False)
+-        self.label_view.set_level_indentation(-35)
+         # Force the theme to use an expander-size of 15 so that we don't cut out
+         # entries due to our indentation hack.
+-        gtk.rc_parse_string('style "treeview-style" { GtkTreeView::expander-size = 15 } class "GtkTreeView" style "treeview-style"')
++        Gtk.rc_parse_string('style "treeview-style" { GtkTreeView::expander-size = 15 } class "GtkTreeView" style "treeview-style"')
+ 
+         self.label_view.set_model(self.treestore)
+         self.label_view.get_selection().connect("changed", self.on_selection_changed)
+@@ -153,9 +152,9 @@ class FilterTreeView(component.Component):
+         self.label_view.connect("button-press-event", self.on_button_press_event)
+ 
+         #colors using current theme.
+-        style = self.window.window.get_style()
+-        self.colour_background = style.bg[gtk.STATE_NORMAL]
+-        self.colour_foreground = style.fg[gtk.STATE_NORMAL]
++        style_ctx = self.window.window.get_style_context()
++        self.colour_background = style_ctx.get_background_color(Gtk.StateFlags.NORMAL)
++        self.colour_foreground = style_ctx.get_color(Gtk.StateFlags.NORMAL)
+ 
+     def start(self):
+         #add Cat nodes:
+@@ -273,8 +272,8 @@ class FilterTreeView(component.Component):
+ 
+         if cat == "cat":
+             txt = label
+-            cell.set_property("cell-background-gdk", self.colour_background)
+-            cell.set_property("foreground-gdk", self.colour_foreground)
++            cell.set_property("cell-background-gdk", self.colour_background.to_color())
++            cell.set_property("foreground-gdk", self.colour_foreground.to_color())
+         else:
+             txt = "%s (%s)"  % (label, count)
+             cell.set_property("cell-background", None)
+@@ -291,20 +290,20 @@ class FilterTreeView(component.Component):
+ 
+         if pix:
+             try:
+-                return gtk.gdk.pixbuf_new_from_file(deluge.common.get_pixmap("%s16.png" % pix))
++                return GdkPixbuf.Pixbuf.new_from_file(deluge.common.get_pixmap("%s16.png" % pix))
+             except GError, e:
+                 log.warning(e)
+         return self.get_transparent_pix(16, 16)
+ 
+     def get_transparent_pix(self,  width, height):
+-        pix = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, True, 8, width, height)
++        pix = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, width, height)
+         pix.fill(0x0000000)
+         return pix
+ 
+     def set_row_image(self, cat, value, filename):
+         pix = None
+         try: #assume we could get trashed images here..
+-            pix = gtk.gdk.pixbuf_new_from_file_at_size(filename, 16, 16)
++            pix = GdkPixbuf.Pixbuf.new_from_file_at_size(filename, 16, 16)
+         except Exception, e:
+             log.debug(e)
+ 
+diff --git a/deluge/ui/gtkui/gtkui.py b/deluge/ui/gtkui/gtkui.py
+index c331284..1ed14f5 100644
+--- a/deluge/ui/gtkui/gtkui.py
++++ b/deluge/ui/gtkui/gtkui.py
+@@ -34,11 +34,15 @@
+ #
+ from deluge.log import LOG as log
+ 
+-import gobject
+-gobject.set_prgname("deluge")
++import gi
++gi.require_version("Gtk", "3.0")
++gi.require_version("Gdk", "3.0")
++
++from gi.repository import GObject
++GObject.set_prgname("deluge")
+ 
+ # Install the twisted reactor
+-from twisted.internet import gtk2reactor
++from twisted.internet import gtk3reactor
+ 
+ try:
+     from twisted.internet.error import ReactorAlreadyInstalledError
+@@ -47,7 +51,7 @@ except ImportError:
+     pass
+ 
+ try:
+-    reactor = gtk2reactor.install()
++    reactor = gtk3reactor.install()
+ except ReactorAlreadyInstalledError:
+     # Running unit tests so trial already installed a rector
+     pass
+@@ -55,7 +59,8 @@ except ReactorAlreadyInstalledError:
+ import gettext
+ import locale
+ import pkg_resources
+-import gtk
++from gi.repository import Gtk, Gdk
++from gi.repository.Gtk import events_pending
+ import sys
+ import warnings
+ 
+@@ -215,7 +220,7 @@ class GtkUI(object):
+                     return 1
+             SetConsoleCtrlHandler(win_handler)
+ 
+-        if deluge.common.osx_check() and gtk.gdk.WINDOWING == "quartz":
++        if deluge.common.osx_check() and Gdk.WINDOWING == "quartz":
+             import gtkosx_application
+             self.osxapp = gtkosx_application.gtkosx_application_get()
+             def on_die(*args):
+@@ -243,8 +248,8 @@ class GtkUI(object):
+         self.ipcinterface = IPCInterface(args)
+ 
+         # Initialize gdk threading
+-        gtk.gdk.threads_init()
+-        gobject.threads_init()
++        Gdk.threads_init()
++        GObject.threads_init()
+ 
+         # We make sure that the UI components start once we get a core URI
+         client.set_disconnect_callback(self.__on_disconnect)
+@@ -264,7 +269,7 @@ class GtkUI(object):
+         self.statusbar = StatusBar()
+         self.addtorrentdialog = AddTorrentDialog()
+ 
+-        if deluge.common.osx_check() and gtk.gdk.WINDOWING == "quartz":
++        if deluge.common.osx_check() and Gdk.WINDOWING == "quartz":
+             def nsapp_open_file(osxapp, filename):
+                 # Will be raised at app launch (python opening main script)
+                 if filename.endswith('Deluge-bin'):
+@@ -288,10 +293,10 @@ class GtkUI(object):
+ 
+         reactor.callWhenRunning(self._on_reactor_start)
+         # Start the gtk main loop
+-        gtk.gdk.threads_enter()
++        Gdk.threads_enter()
+         reactor.run()
+         self.shutdown()
+-        gtk.gdk.threads_leave()
++        Gdk.threads_leave()
+ 
+     def shutdown(self, *args, **kwargs):
+         log.debug("gtkui shutting down..")
+@@ -300,7 +305,7 @@ class GtkUI(object):
+ 
+         # Process any pending gtk events since the mainloop has been quit
+         if not deluge.common.windows_check() and not deluge.common.osx_check():
+-            while gtk.events_pending() and reactor.running:
++            while events_pending() and reactor.running:
+                 reactor.doIteration(0)
+ 
+         # Shutdown all components
+@@ -335,7 +340,7 @@ class GtkUI(object):
+         if self.config["classic_mode"]:
+ 
+             def on_dialog_response(response):
+-                if response != gtk.RESPONSE_YES:
++                if response != Gtk.ResponseType.YES:
+                     # The user does not want to turn Classic Mode off, so just quit
+                     self.mainwindow.quit()
+                     return
+diff --git a/deluge/ui/gtkui/ipcinterface.py b/deluge/ui/gtkui/ipcinterface.py
+index 03c281c..5778b56 100644
+--- a/deluge/ui/gtkui/ipcinterface.py
++++ b/deluge/ui/gtkui/ipcinterface.py
+@@ -154,8 +154,8 @@ class IPCInterface(component.Component):
+                 reactor.run()
+                 if self.factory.stop:
+                     log.info("Success sending arguments to running Deluge.")
+-                    import gtk
+-                    gtk.gdk.notify_startup_complete()
++                    from gi.repository import Gdk
++                    Gdk.notify_startup_complete()
+                     sys.exit(0)
+                 else:
+                     if restart_tempfile:
+diff --git a/deluge/ui/gtkui/listview.py b/deluge/ui/gtkui/listview.py
+index 283c77f..b1897cd 100644
+--- a/deluge/ui/gtkui/listview.py
++++ b/deluge/ui/gtkui/listview.py
+@@ -38,9 +38,9 @@
+ import cPickle
+ import os.path
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk
++import gi
++gi.require_version("Gtk", "3.0")
++from gi.repository import Gtk, GObject
+ import gettext
+ 
+ from deluge.configmanager import ConfigManager
+@@ -49,9 +49,9 @@ import deluge.common
+ from deluge.log import LOG as log
+ 
+ from gobject import signal_new, SIGNAL_RUN_LAST, TYPE_NONE
+-from gtk import gdk
+-signal_new('button-press-event', gtk.TreeViewColumn,
+-           SIGNAL_RUN_LAST, TYPE_NONE, (gdk.Event,))
++from gi.repository import Gdk
++signal_new('button-press-event', Gtk.TreeViewColumn,
++           SIGNAL_RUN_LAST, TYPE_NONE, (Gdk.Event,))
+ 
+ 
+ # Cell data functions to pass to add_func_column()
+@@ -154,7 +154,7 @@ class ListView:
+             self.pixbuf_index = 0
+             self.data_func = None
+ 
+-    class TreeviewColumn(gtk.TreeViewColumn):
++    class TreeviewColumn(Gtk.TreeViewColumn):
+         """
+             TreeViewColumn does not signal right-click events, and we need them
+             This subclass is equivalent to TreeViewColumn, but it signals these events
+@@ -163,9 +163,9 @@ class ListView:
+         """
+ 
+         def __init__(self, title=None, cell_renderer=None, ** args):
+-            """ Constructor, see gtk.TreeViewColumn """
+-            gtk.TreeViewColumn.__init__(self, title, cell_renderer, ** args)
+-            label = gtk.Label(title)
++            """ Constructor, see Gtk.TreeViewColumn """
++            Gtk.TreeViewColumn.__init__(self, title, cell_renderer, ** args)
++            label = Gtk.Label(label=title)
+             self.set_widget(label)
+             label.show()
+             label.__realize = label.connect('realize', self.onRealize)
+@@ -173,7 +173,7 @@ class ListView:
+         def onRealize(self, widget):
+             widget.disconnect(widget.__realize)
+             del widget.__realize
+-            button = widget.get_ancestor(gtk.Button)
++            button = widget.get_ancestor(Gtk.Button)
+             if button is not None:
+                 button.connect('button-press-event', self.onButtonPressed)
+ 
+@@ -195,7 +195,7 @@ class ListView:
+             # User supplied a treeview widget
+             self.treeview = treeview_widget
+         else:
+-            self.treeview = gtk.TreeView()
++            self.treeview = Gtk.TreeView()
+ 
+         self.treeview.set_enable_search(True)
+         self.treeview.set_search_equal_func(self.on_keypress_search_by_name)
+@@ -208,7 +208,7 @@ class ListView:
+ 
+         self.treeview.set_rules_hint(True)
+         self.treeview.set_reorderable(False)
+-        self.treeview.get_selection().set_mode(gtk.SELECTION_MULTIPLE)
++        self.treeview.get_selection().set_mode(Gtk.SelectionMode.MULTIPLE)
+ 
+         # Dictionary of 'header' or 'name' to ListViewColumn object
+         self.columns = {}
+@@ -238,7 +238,7 @@ class ListView:
+         model_filter = self.liststore.filter_new()
+         model_filter.set_visible_column(
+             self.columns["filter"].column_indices[0])
+-        self.model_filter = gtk.TreeModelSort(model_filter)
++        self.model_filter = Gtk.TreeModelSort(model_filter)
+         self.treeview.set_model(self.model_filter)
+         self.set_sort_functions()
+         self.set_model_sort()
+@@ -384,7 +384,7 @@ class ListView:
+ 
+     def create_checklist_menu(self):
+         """Creates a menu used for toggling the display of columns."""
+-        menu = self.menu = gtk.Menu()
++        menu = self.menu = Gtk.Menu()
+         # Iterate through the column_index list to preserve order
+         for name in self.column_index:
+             column = self.columns[name]
+@@ -392,7 +392,7 @@ class ListView:
+             # menu.
+             if column.hidden is True:
+                 continue
+-            menuitem = gtk.CheckMenuItem(column.name)
++            menuitem = Gtk.CheckMenuItem(column.name)
+             # If the column is currently visible, make sure it's set active
+             # (or checked) in the menu.
+             if column.column.get_visible() is True:
+@@ -412,7 +412,7 @@ class ListView:
+         """Creates a new GtkListStore based on the liststore_columns list"""
+         # Create a new liststore with added column and move the data from the
+         # old one to the new one.
+-        new_list = gtk.ListStore(*tuple(self.liststore_columns))
++        new_list = Gtk.ListStore(*tuple(self.liststore_columns))
+ 
+         # This function is used in the liststore.foreach method with user_data
+         # being the new liststore and the columns list
+@@ -439,12 +439,12 @@ class ListView:
+ 
+         if column.column_type == "text":
+             if add:
+-                tree_column.pack_start(column.renderer)
++                tree_column.pack_start(column.renderer, True)
+             tree_column.set_col_attributes(column.renderer, add=add,
+                                            text=column.column_indices[column.text_index])
+         elif column.column_type == "bool":
+             if add:
+-                tree_column.pack_start(column.renderer)
++                tree_column.pack_start(column.renderer, True)
+             tree_column.set_col_attributes(column.renderer, active=column.column_indices[0])
+         elif column.column_type == "func":
+             if add:
+@@ -455,7 +455,7 @@ class ListView:
+             tree_column.set_cell_data_func(column.renderer, column.data_func, indice_arg)
+         elif column.column_type == "progress":
+             if add:
+-                tree_column.pack_start(column.renderer)
++                tree_column.pack_start(column.renderer, True)
+             if column.data_func is None:
+                 tree_column.set_col_attributes(column.renderer, add=add,
+                                                text=column.column_indices[column.text_index],
+@@ -570,7 +570,7 @@ class ListView:
+                     # We found a loaded state
+                     column_in_state = True
+                     if column_state.width > 0:
+-                        column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
++                        column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+                         column.set_fixed_width(column_state.width)
+                     column.set_visible(column_state.visible)
+                     position = column_state.position
+@@ -598,7 +598,7 @@ class ListView:
+                         sort_func=None, default=True):
+         """Add a text column to the listview.  Only the header name is required.
+         """
+-        render = gtk.CellRendererText()
++        render = Gtk.CellRendererText()
+         self.add_column(header, render, col_type, hidden, position,
+                         status_field, sortid, column_type=column_type,
+                         sort_func=sort_func, default=default)
+@@ -609,7 +609,7 @@ class ListView:
+                         position=None, status_field=None, sortid=0,
+                         column_type="bool", default=True):
+         """Add a bool column to the listview"""
+-        render = gtk.CellRendererToggle()
++        render = Gtk.CellRendererToggle()
+         self.add_column(header, render, col_type, hidden, position,
+                         status_field, sortid, column_type=column_type,
+                         default=default)
+@@ -620,7 +620,7 @@ class ListView:
+         """Add a function column to the listview.  Need a header name, the
+         function and the column types."""
+ 
+-        render = gtk.CellRendererText()
++        render = Gtk.CellRendererText()
+         self.add_column(header, render, col_types, hidden, position,
+                         status_field, sortid, column_type=column_type,
+                         function=function, sort_func=sort_func, default=default)
+@@ -633,7 +633,7 @@ class ListView:
+                             default=True):
+         """Add a progress column to the listview."""
+ 
+-        render = gtk.CellRendererProgress()
++        render = Gtk.CellRendererProgress()
+         self.add_column(header, render, col_types, hidden, position,
+                         status_field, sortid, function=function,
+                         column_type=column_type, value=0, text=1,
+@@ -646,8 +646,8 @@ class ListView:
+                             column_type="texticon", function=None,
+                             default=True):
+         """Adds a texticon column to the listview."""
+-        render1 = gtk.CellRendererPixbuf()
+-        render2 = gtk.CellRendererText()
++        render1 = Gtk.CellRendererPixbuf()
++        render2 = Gtk.CellRendererText()
+ 
+         self.add_column(header, (render1, render2), col_types, hidden, position,
+                         status_field, sortid, column_type=column_type,
+diff --git a/deluge/ui/gtkui/mainwindow.py b/deluge/ui/gtkui/mainwindow.py
+index 984fabf..a7418d0 100644
+--- a/deluge/ui/gtkui/mainwindow.py
++++ b/deluge/ui/gtkui/mainwindow.py
+@@ -34,17 +34,19 @@
+ #
+ 
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk
+-import gobject
++import gi
++gi.require_version("Gtk", "3.0")
++gi.require_version('Wnck', '3.0')
++from gi.repository import Gtk, Gdk
++from gi.repository import GObject
+ import pkg_resources
+ from hashlib import sha1 as sha
+ 
+ try:
+-    import wnck
++    from gi.repository import Wnck
++    import Wnck.Window
+ except ImportError:
+-    wnck = None
++    Wnck = None
+ 
+ from deluge.ui.client import client
+ import deluge.component as component
+@@ -61,12 +63,12 @@ from deluge.log import LOG as log
+ 
+ class MainWindow(component.Component):
+     def __init__(self):
+-        if wnck:
+-            self.screen = wnck.screen_get_default()
++        if Wnck:
++            self.screen = Wnck.Screen.get_default()
+         component.Component.__init__(self, "MainWindow", interval=2)
+         self.config = ConfigManager("gtkui.conf")
+         # Get the glade file for the main window
+-        self.main_glade = gtk.Builder()
++        self.main_glade = Gtk.Builder()
+         self.main_glade.add_from_file(
+                     pkg_resources.resource_filename("deluge.ui.gtkui",
+                                                     "builder/main_window.ui"))
+@@ -87,8 +89,8 @@ class MainWindow(component.Component):
+         # UI when it is minimized.
+         self.is_minimized = False
+ 
+-        self.window.drag_dest_set(gtk.DEST_DEFAULT_ALL, [('text/uri-list', 0,
+-            80)], gtk.gdk.ACTION_COPY)
++        self.window.drag_dest_set(Gtk.DestDefaults.ALL, [Gtk.TargetEntry.new('text/uri-list', 0,
++            80)], Gdk.DragAction.COPY)
+ 
+         # Connect events
+         self.window.connect("window-state-event", self.on_window_state_event)
+@@ -96,7 +98,7 @@ class MainWindow(component.Component):
+         self.window.connect("delete-event", self.on_window_delete_event)
+         self.window.connect("drag-data-received", self.on_drag_data_received_event)
+         self.vpaned.connect("notify::position", self.on_vpaned_position_event)
+-        self.window.connect("expose-event", self.on_expose_event)
++        self.window.connect("draw", self.on_expose_event)
+ 
+         self.config.register_set_function("show_rate_in_title", self._on_set_show_rate_in_title, apply_now=False)
+ 
+@@ -112,8 +114,8 @@ class MainWindow(component.Component):
+                 self.window.get_property("visible"):
+             log.debug("Showing window")
+             self.show()
+-            while gtk.events_pending():
+-                gtk.main_iteration(False)
++            while Gtk.events_pending():
++                Gtk.main_iteration()
+             self.vpaned.set_position(self.initial_vpaned_position)
+ 
+     def show(self):
+@@ -161,7 +163,7 @@ class MainWindow(component.Component):
+         if self.config["lock_tray"] and not self.visible():
+             dialog = PasswordDialog(_("Enter your password to show Deluge..."))
+             def on_dialog_response(response_id):
+-                if response_id == gtk.RESPONSE_OK:
++                if response_id == Gtk.ResponseType.OK:
+                     if self.config["tray_password"] == sha(dialog.get_password()).hexdigest():
+                         restore()
+             dialog.run().addCallback(on_dialog_response)
+@@ -216,7 +218,7 @@ class MainWindow(component.Component):
+         if self.config["lock_tray"] and not self.visible():
+             dialog = PasswordDialog(_("Enter your password to Quit Deluge..."))
+             def on_dialog_response(response_id):
+-                if response_id == gtk.RESPONSE_OK:
++                if response_id == Gtk.ResponseType.OK:
+                     if self.config["tray_password"] == sha(dialog.get_password()).hexdigest():
+                         quit_gtkui()
+             dialog.run().addCallback(on_dialog_response)
+@@ -241,14 +243,14 @@ class MainWindow(component.Component):
+             self.config["window_height"] = event.height
+ 
+     def on_window_state_event(self, widget, event):
+-        if event.changed_mask & gtk.gdk.WINDOW_STATE_MAXIMIZED:
+-            if event.new_window_state & gtk.gdk.WINDOW_STATE_MAXIMIZED:
++        if event.changed_mask & Gdk.WindowState.MAXIMIZED:
++            if event.new_window_state & Gdk.WindowState.MAXIMIZED:
+                 log.debug("pos: %s", self.window.get_position())
+                 self.config["window_maximized"] = True
+-            elif not event.new_window_state & gtk.gdk.WINDOW_STATE_WITHDRAWN:
++            elif not event.new_window_state & Gdk.WindowState.WITHDRAWN:
+                 self.config["window_maximized"] = False
+-        if event.changed_mask & gtk.gdk.WINDOW_STATE_ICONIFIED:
+-            if event.new_window_state & gtk.gdk.WINDOW_STATE_ICONIFIED:
++        if event.changed_mask & Gdk.WindowState.ICONIFIED:
++            if event.new_window_state & Gdk.WindowState.ICONIFIED:
+                 log.debug("MainWindow is minimized..")
+                 component.pause("TorrentView")
+                 component.pause("StatusBar")
+@@ -319,9 +321,9 @@ class MainWindow(component.Component):
+             bool: True if on active workspace (or wnck module not available), otherwise False.
+ 
+         """
+-        if wnck:
++        if Wnck:
+             self.screen.force_update()
+-            win = wnck.window_get(self.window.window.xid)
++            win = Wnck.Window.get(self.window.window.xid)
+             if win:
+                 active_wksp = win.get_screen().get_active_workspace()
+                 if active_wksp:
+diff --git a/deluge/ui/gtkui/menubar.py b/deluge/ui/gtkui/menubar.py
+index 01c9881..d825540 100644
+--- a/deluge/ui/gtkui/menubar.py
++++ b/deluge/ui/gtkui/menubar.py
+@@ -34,9 +34,9 @@
+ #
+ 
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk
++import gi
++gi.require_version("Gtk", "3.0")
++from gi.repository import Gtk
+ import pkg_resources
+ 
+ import deluge.error
+@@ -56,7 +56,7 @@ class MenuBar(component.Component):
+         self.config = ConfigManager("gtkui.conf")
+ 
+         # Get the torrent menu from the glade file
+-        self.torrentmenu_glade = gtk.Builder()
++        self.torrentmenu_glade = Gtk.Builder()
+         self.torrentmenu_glade.add_from_file(
+                     pkg_resources.resource_filename("deluge.ui.gtkui",
+                                                 "builder/torrent_menu.ui"))
+@@ -74,23 +74,23 @@ class MenuBar(component.Component):
+ 
+         for menuitem in ("menuitem_down_speed", "menuitem_up_speed",
+             "menuitem_max_connections", "menuitem_upload_slots"):
+-            submenu = gtk.Menu()
+-            item = gtk.MenuItem(_("Set Unlimited"))
++            submenu = Gtk.Menu()
++            item = Gtk.MenuItem(_("Set Unlimited"))
+             item.set_name(menuitem)
+             item.connect("activate", self.on_menuitem_set_unlimited)
+             submenu.append(item)
+-            item = gtk.MenuItem(_("Other..."))
++            item = Gtk.MenuItem(_("Other..."))
+             item.set_name(menuitem)
+             item.connect("activate", self.on_menuitem_set_other)
+             submenu.append(item)
+             submenu.show_all()
+             self.torrentmenu_glade.get_object(menuitem).set_submenu(submenu)
+ 
+-        submenu = gtk.Menu()
+-        item = gtk.MenuItem(_("On"))
++        submenu = Gtk.Menu()
++        item = Gtk.MenuItem(_("On"))
+         item.connect("activate", self.on_menuitem_set_automanaged_on)
+         submenu.append(item)
+-        item = gtk.MenuItem(_("Off"))
++        item = Gtk.MenuItem(_("Off"))
+         item.connect("activate", self.on_menuitem_set_automanaged_off)
+         submenu.append(item)
+         submenu.show_all()
+@@ -223,7 +223,7 @@ class MenuBar(component.Component):
+         # Any better way than duplicating toolbar.py:update_buttons in here?
+ 
+     def add_torrentmenu_separator(self):
+-        sep = gtk.SeparatorMenuItem()
++        sep = Gtk.SeparatorMenuItem()
+         self.torrentmenu.append(sep)
+         sep.show()
+         return sep
+@@ -308,7 +308,7 @@ class MenuBar(component.Component):
+     def on_menuitem_open_folder_activate(self, data=None):
+         log.debug("on_menuitem_open_folder")
+         def _on_torrent_status(status):
+-            timestamp = gtk.get_current_event_time()
++            timestamp = Gtk.get_current_event_time()
+             deluge.common.open_file(status["save_path"], timestamp=timestamp)
+         for torrent_id in component.get("TorrentView").get_selected_torrents():
+             component.get("SessionProxy").get_torrent_status(torrent_id, ["save_path"]).addCallback(_on_torrent_status)
+@@ -318,16 +318,16 @@ class MenuBar(component.Component):
+         if client.is_localhost():
+             from deluge.configmanager import ConfigManager
+             config = ConfigManager("gtkui.conf")
+-            chooser = gtk.FileChooserDialog(_("Choose a directory to move files to"\
++            chooser = Gtk.FileChooserDialog(_("Choose a directory to move files to"\
+                 ) , component.get("MainWindow").window, \
+-                gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER, buttons=(gtk.STOCK_CANCEL, \
+-                gtk.RESPONSE_CANCEL, gtk.STOCK_OK, gtk.RESPONSE_OK))
++                Gtk.FileChooserAction.SELECT_FOLDER, buttons=(Gtk.STOCK_CANCEL, \
++                Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK))
+             chooser.set_local_only(True)
+             if not deluge.common.windows_check():
+                 chooser.set_icon(common.get_deluge_icon())
+                 chooser.set_property("skip-taskbar-hint", True)
+             chooser.set_current_folder(config["choose_directory_dialog_path"])
+-            if chooser.run() == gtk.RESPONSE_OK:
++            if chooser.run() == Gtk.ResponseType.OK:
+                 result = chooser.get_filename()
+                 config["choose_directory_dialog_path"] = result
+                 client.core.move_storage(
+@@ -338,7 +338,7 @@ class MenuBar(component.Component):
+ 
+     def show_move_storage_dialog(self, status):
+         log.debug("show_move_storage_dialog")
+-        glade = gtk.Builder()
++        glade = Gtk.Builder()
+         glade.add_from_file(pkg_resources.resource_filename(
+             "deluge.ui.gtkui", "builder/move_storage_dialog.ui"
+         ))
+@@ -355,7 +355,7 @@ class MenuBar(component.Component):
+                 del self.move_storage_dialog
+                 del self.move_storage_dialog_entry
+ 
+-            if response_id == gtk.RESPONSE_OK:
++            if response_id == Gtk.ResponseType.OK:
+                 log.debug("Moving torrents to %s",
+                           self.move_storage_dialog_entry.get_text())
+                 path = self.move_storage_dialog_entry.get_text()
+@@ -415,19 +415,19 @@ class MenuBar(component.Component):
+         AboutDialog().run()
+ 
+     def on_menuitem_set_unlimited(self, widget):
+-        log.debug("widget.name: %s", widget.name)
++        log.debug("widget.name: %s", widget.get_name())
+         funcs = {
+             "menuitem_down_speed": client.core.set_torrent_max_download_speed,
+             "menuitem_up_speed": client.core.set_torrent_max_upload_speed,
+             "menuitem_max_connections": client.core.set_torrent_max_connections,
+             "menuitem_upload_slots": client.core.set_torrent_max_upload_slots
+         }
+-        if widget.name in funcs.keys():
++        if widget.get_name() in funcs.keys():
+             for torrent in component.get("TorrentView").get_selected_torrents():
+-                funcs[widget.name](torrent, -1)
++                funcs[widget.get_name()](torrent, -1)
+ 
+     def on_menuitem_set_other(self, widget):
+-        log.debug("widget.name: %s", widget.name)
++        log.debug("widget.name: %s", widget.get_name())
+         funcs = {
+             "menuitem_down_speed": client.core.set_torrent_max_download_speed,
+             "menuitem_up_speed": client.core.set_torrent_max_upload_speed,
+@@ -438,15 +438,15 @@ class MenuBar(component.Component):
+         other_dialog_info = {
+             "menuitem_down_speed": (_("Set Maximum Download Speed"), _("KiB/s"), None, "downloading.svg", -1.0),
+             "menuitem_up_speed": (_("Set Maximum Upload Speed"), _("KiB/s"), None, "seeding.svg", -1.0),
+-            "menuitem_max_connections": (_("Set Maximum Connections"), "", gtk.STOCK_NETWORK, None, -1),
+-            "menuitem_upload_slots": (_("Set Maximum Upload Slots"), "", gtk.STOCK_SORT_ASCENDING, None, -1)
++            "menuitem_max_connections": (_("Set Maximum Connections"), "", Gtk.STOCK_NETWORK, None, -1),
++            "menuitem_upload_slots": (_("Set Maximum Upload Slots"), "", Gtk.STOCK_SORT_ASCENDING, None, -1)
+         }
+ 
+         # Show the other dialog
+-        value = common.show_other_dialog(*other_dialog_info[widget.name])
+-        if value and widget.name in funcs:
++        value = common.show_other_dialog(*other_dialog_info[widget.get_name()])
++        if value and widget.get_name() in funcs:
+             for torrent in component.get("TorrentView").get_selected_torrents():
+-                funcs[widget.name](torrent, value)
++                funcs[widget.get_name()](torrent, value)
+ 
+     def on_menuitem_set_automanaged_on(self, widget):
+         for torrent in component.get("TorrentView").get_selected_torrents():
+diff --git a/deluge/ui/gtkui/menubar_osx.py b/deluge/ui/gtkui/menubar_osx.py
+index fb26cef..2349e7a 100644
+--- a/deluge/ui/gtkui/menubar_osx.py
++++ b/deluge/ui/gtkui/menubar_osx.py
+@@ -32,22 +32,22 @@
+ #    statement from all source files in the program, then also delete it here.
+ #
+ #
+-import gtk
++from gi.repository import Gtk, Gdk
+ 
+ from deluge.configmanager import ConfigManager
+ 
+ def accel_swap(item, group, skey, smod, dkey, dmod):
+ 	item.remove_accelerator(group, ord(skey), smod)
+-	item.add_accelerator("activate", group, ord(dkey), dmod, gtk.ACCEL_VISIBLE)
++	item.add_accelerator("activate", group, ord(dkey), dmod, Gtk.AccelFlags.VISIBLE)
+ 
+ def accel_meta(item, group, key):
+-	accel_swap(item, group, key, gtk.gdk.CONTROL_MASK, key, gtk.gdk.META_MASK)
++	accel_swap(item, group, key, Gdk.ModifierType.CONTROL_MASK, key, Gdk.EventMask.META_MASK)
+ 
+ def menubar_osx(gtkui, osxapp):
+ 	window = gtkui.mainwindow
+ 	glade  = window.main_glade
+ 	menubar = glade.get_object("menubar")
+-	group = gtk.accel_groups_from_object(window.window)[0]
++	group = Gtk.accel_groups_from_object(window.window)[0]
+ 
+ 	config = ConfigManager("gtkui.conf")
+ 
+@@ -60,8 +60,8 @@ def menubar_osx(gtkui, osxapp):
+ 	accel_meta(file_items[0], group, 'o')
+ 	accel_meta(file_items[1], group, 'n')
+ 	quit_all_item = file_items[3]
+-	accel_swap(quit_all_item, group, 'q', gtk.gdk.SHIFT_MASK | gtk.gdk.CONTROL_MASK,
+-										  'q', gtk.gdk.SHIFT_MASK | gtk.gdk.META_MASK)
++	accel_swap(quit_all_item, group, 'q', Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.CONTROL_MASK,
++										  'q', Gdk.ModifierType.SHIFT_MASK | Gdk.EventMask.META_MASK)
+ 	for item in range(2, len(file_items)): # remove quits
+ 		file_menu.remove(file_items[item])
+ 
+@@ -69,7 +69,7 @@ def menubar_osx(gtkui, osxapp):
+ 	edit_menu = menu_widget.get_submenu()
+ 	edit_items = edit_menu.get_children()
+ 	pref_item = edit_items[0]
+-	accel_swap(pref_item, group, 'p', gtk.gdk.CONTROL_MASK, ',', gtk.gdk.META_MASK)
++	accel_swap(pref_item, group, 'p', Gdk.ModifierType.CONTROL_MASK, ',', Gdk.EventMask.META_MASK)
+ 	edit_menu.remove(pref_item)
+ 
+ 	conn_item = edit_items[1]
+@@ -88,10 +88,10 @@ def menubar_osx(gtkui, osxapp):
+ 	osxapp.set_menu_bar(menubar)
+ 	# populate app menu
+ 	osxapp.insert_app_menu_item(about_item, 0)
+-	osxapp.insert_app_menu_item(gtk.SeparatorMenuItem(), 1)
++	osxapp.insert_app_menu_item(Gtk.SeparatorMenuItem(), 1)
+ 	osxapp.insert_app_menu_item(pref_item, 2)
+ 	if not config["classic_mode"]:
+ 		osxapp.insert_app_menu_item(conn_item, 3)
+ 	if quit_all_item.get_visible():
+-		osxapp.insert_app_menu_item(gtk.SeparatorMenuItem(), 4)
++		osxapp.insert_app_menu_item(Gtk.SeparatorMenuItem(), 4)
+ 		osxapp.insert_app_menu_item(quit_all_item, 5)
+diff --git a/deluge/ui/gtkui/notification.py b/deluge/ui/gtkui/notification.py
+index a1c35a2..109edd6 100644
+--- a/deluge/ui/gtkui/notification.py
++++ b/deluge/ui/gtkui/notification.py
+@@ -70,15 +70,15 @@ class Notification:
+         """popups up notification of finished torrent"""
+         if not deluge.common.windows_check():
+             try:
+-                import pynotify
++                from gi.repository import Notify
+             except:
+                 log.warning("pynotify is not installed")
+             else:
+-                if not pynotify.init("Deluge"):
++                if not Notify.init("Deluge"):
+                     return
+                 title = deluge.common.xml_encode(_("Torrent complete"))
+                 message = deluge.common.xml_encode("%s\n%s %i %s"  % (status["name"], _("Including"), status["num_files"], _("files")))
+-                self.note = pynotify.Notification(title, message)
++                self.note = Notify.Notification(title, message)
+                 self.note.set_icon_from_pixbuf(common.get_logo(48))
+                 if not self.note.show():
+                     log.warning("pynotify failed to show notification")
+diff --git a/deluge/ui/gtkui/peers_tab.py b/deluge/ui/gtkui/peers_tab.py
+index 02f4019..34db797 100644
+--- a/deluge/ui/gtkui/peers_tab.py
++++ b/deluge/ui/gtkui/peers_tab.py
+@@ -34,11 +34,11 @@
+ #
+ 
+ 
+-import gtk
++from gi.repository import Gtk, GdkPixbuf
+ import os.path
+ import cPickle
+ import pkg_resources
+-import gobject
++from gi.repository import GObject
+ from itertools import izip
+ 
+ from deluge.ui.client import client
+@@ -75,18 +75,18 @@ class PeersTab(Tab):
+         self.listview.connect("button-press-event", self._on_button_press_event)
+         self.listview.connect("query-tooltip", self._on_query_tooltip)
+         # country pixbuf, ip, client, downspeed, upspeed, country code, int_ip, seed/peer icon, progress
+-        self.liststore = gtk.ListStore(gtk.gdk.Pixbuf, str, str, int, int, str, float, gtk.gdk.Pixbuf, float)
++        self.liststore = Gtk.ListStore(GdkPixbuf.Pixbuf, str, str, int, int, str, float, GdkPixbuf.Pixbuf, float)
+         self.cached_flag_pixbufs = {}
+ 
+-        self.seed_pixbuf = gtk.gdk.pixbuf_new_from_file(deluge.common.get_pixmap("seeding16.png"))
+-        self.peer_pixbuf = gtk.gdk.pixbuf_new_from_file(deluge.common.get_pixmap("downloading16.png"))
++        self.seed_pixbuf = GdkPixbuf.Pixbuf.new_from_file(deluge.common.get_pixmap("seeding16.png"))
++        self.peer_pixbuf = GdkPixbuf.Pixbuf.new_from_file(deluge.common.get_pixmap("downloading16.png"))
+ 
+         # key is ip address, item is row iter
+         self.peers = {}
+ 
+         # Country column
+-        column = gtk.TreeViewColumn()
+-        render = gtk.CellRendererPixbuf()
++        column = Gtk.TreeViewColumn()
++        render = Gtk.CellRendererPixbuf()
+         column.pack_start(render, False)
+         column.add_attribute(render, "pixbuf", 0)
+         column.set_sort_column_id(5)
+@@ -98,11 +98,11 @@ class PeersTab(Tab):
+         self.listview.append_column(column)
+ 
+         # Address column
+-        column = gtk.TreeViewColumn(_("Address"))
+-        render = gtk.CellRendererPixbuf()
++        column = Gtk.TreeViewColumn(_("Address"))
++        render = Gtk.CellRendererPixbuf()
+         column.pack_start(render, False)
+         column.add_attribute(render, "pixbuf", 7)
+-        render = gtk.CellRendererText()
++        render = Gtk.CellRendererText()
+         column.pack_start(render, False)
+         column.add_attribute(render, "text", 1)
+         column.set_sort_column_id(6)
+@@ -114,8 +114,8 @@ class PeersTab(Tab):
+         self.listview.append_column(column)
+ 
+         # Client column
+-        column = gtk.TreeViewColumn(_("Client"))
+-        render = gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Client"))
++        render = Gtk.CellRendererText()
+         column.pack_start(render, False)
+         column.add_attribute(render, "text", 2)
+         column.set_sort_column_id(2)
+@@ -127,8 +127,8 @@ class PeersTab(Tab):
+         self.listview.append_column(column)
+ 
+         # Progress column
+-        column = gtk.TreeViewColumn(_("Progress"))
+-        render = gtk.CellRendererProgress()
++        column = Gtk.TreeViewColumn(_("Progress"))
++        render = Gtk.CellRendererProgress()
+         column.pack_start(render, True)
+         column.set_cell_data_func(render, cell_data_progress, 8)
+         column.set_sort_column_id(8)
+@@ -140,8 +140,8 @@ class PeersTab(Tab):
+         self.listview.append_column(column)
+ 
+         # Down Speed column
+-        column = gtk.TreeViewColumn(_("Down Speed"))
+-        render = gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Down Speed"))
++        render = Gtk.CellRendererText()
+         column.pack_start(render, False)
+         column.set_cell_data_func(render, cell_data_speed, 3)
+         column.set_sort_column_id(3)
+@@ -153,8 +153,8 @@ class PeersTab(Tab):
+         self.listview.append_column(column)
+ 
+         # Up Speed column
+-        column = gtk.TreeViewColumn(_("Up Speed"))
+-        render = gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Up Speed"))
++        render = Gtk.CellRendererText()
+         column.pack_start(render, False)
+         column.set_cell_data_func(render, cell_data_speed, 4)
+         column.set_sort_column_id(4)
+@@ -230,7 +230,7 @@ class PeersTab(Tab):
+             cname = column.get_title()
+             if state["columns"].has_key(cname):
+                 cstate = state["columns"][cname]
+-                column.set_sizing(gtk.TREE_VIEW_COLUMN_FIXED)
++                column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
+                 column.set_fixed_width(cstate["width"] if cstate["width"] > 0 else 10)
+                 if state["sort_id"] == index and state["sort_order"] is not None:
+                     column.set_sort_indicator(True)
+@@ -269,7 +269,7 @@ class PeersTab(Tab):
+         if not self.cached_flag_pixbufs.has_key(country):
+             # We haven't created a pixbuf for this country yet
+             try:
+-                self.cached_flag_pixbufs[country] = gtk.gdk.pixbuf_new_from_file(
++                self.cached_flag_pixbufs[country] = GdkPixbuf.Pixbuf.new_from_file(
+                     pkg_resources.resource_filename(
+                         "deluge",
+                          os.path.join("data", "pixmaps", "flags", country.lower() + ".png")))
+@@ -379,7 +379,7 @@ class PeersTab(Tab):
+     def _on_menuitem_add_peer_activate(self, menuitem):
+         """This is a callback for manually adding a peer"""
+         log.debug("on_menuitem_add_peer")
+-        dialog_glade = gtk.Builder()
++        dialog_glade = Gtk.Builder()
+         dialog_glade.add_from_file(
+             pkg_resources.resource_filename("deluge.ui.gtkui",
+                 "builder/dgtkpopups.ui"))
+diff --git a/deluge/ui/gtkui/preferences.py b/deluge/ui/gtkui/preferences.py
+index 65b04f0..8dfec5b 100644
+--- a/deluge/ui/gtkui/preferences.py
++++ b/deluge/ui/gtkui/preferences.py
+@@ -34,9 +34,9 @@
+ #
+ 
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk
++import gi
++gi.require_version("Gtk", "3.0")
++from gi.repository import Gtk
+ import pkg_resources
+ 
+ import deluge.component as component
+@@ -51,7 +51,7 @@ import deluge.configmanager
+ class Preferences(component.Component):
+     def __init__(self):
+         component.Component.__init__(self, "Preferences")
+-        self.glade = gtk.Builder()
++        self.glade = Gtk.Builder()
+         self.glade.add_from_file(
+                     pkg_resources.resource_filename("deluge.ui.gtkui",
+                                             "builder/preferences_dialog.ui"))
+@@ -72,10 +72,10 @@ class Preferences(component.Component):
+             self.glade.get_object("button_associate_magnet").hide()
+ 
+         # Setup the liststore for the categories (tab pages)
+-        self.liststore = gtk.ListStore(int, str)
++        self.liststore = Gtk.ListStore(int, str)
+         self.treeview.set_model(self.liststore)
+-        render = gtk.CellRendererText()
+-        column = gtk.TreeViewColumn(_("Categories"), render, text=1)
++        render = Gtk.CellRendererText()
++        column = Gtk.TreeViewColumn(_("Categories"), render, text=1)
+         self.treeview.append_column(column)
+         # Add the default categories
+         i = 0
+@@ -87,17 +87,17 @@ class Preferences(component.Component):
+ 
+         # Setup plugin tab listview
+         # The third entry is for holding translated plugin names
+-        self.plugin_liststore = gtk.ListStore(str, bool, str)
+-        self.plugin_liststore.set_sort_column_id(0, gtk.SORT_ASCENDING)
++        self.plugin_liststore = Gtk.ListStore(str, bool, str)
++        self.plugin_liststore.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+         self.plugin_listview = self.glade.get_object("plugin_listview")
+         self.plugin_listview.set_model(self.plugin_liststore)
+-        render = gtk.CellRendererToggle()
++        render = Gtk.CellRendererToggle()
+         render.connect("toggled", self.on_plugin_toggled)
+         render.set_property("activatable", True)
+         self.plugin_listview.append_column(
+-            gtk.TreeViewColumn(_("Enabled"), render, active=1))
++            Gtk.TreeViewColumn(_("Enabled"), render, active=1))
+         self.plugin_listview.append_column(
+-            gtk.TreeViewColumn(_("Plugin"), gtk.CellRendererText(), text=2))
++            Gtk.TreeViewColumn(_("Plugin"), Gtk.CellRendererText(), text=2))
+ 
+         # Connect to the 'changed' event of TreeViewSelection to get selection
+         # changes.
+@@ -136,26 +136,26 @@ class Preferences(component.Component):
+         parent = widget.get_parent()
+         if parent:
+             parent.remove(widget)
+-        vbox = gtk.VBox()
+-        label = gtk.Label()
++        vbox = Gtk.VBox()
++        label = Gtk.Label()
+         label.set_use_markup(True)
+         label.set_markup("<b><i><big>" + name + "</big></i></b>")
+         label.set_alignment(0.00, 0.50)
+         label.set_padding(10, 10)
+         vbox.pack_start(label, False, True, 0)
+-        sep = gtk.HSeparator()
++        sep = Gtk.HSeparator()
+         vbox.pack_start(sep, False, True, 0)
+-        align = gtk.Alignment()
++        align = Gtk.Alignment.new()
+         align.set_padding(5, 0, 0, 0)
+         align.set(0, 0, 1, 1)
+         align.add(widget)
+         vbox.pack_start(align, True, True, 0)
+-        scrolled = gtk.ScrolledWindow()
+-        viewport = gtk.Viewport()
+-        viewport.set_shadow_type(gtk.SHADOW_NONE)
++        scrolled = Gtk.ScrolledWindow()
++        viewport = Gtk.Viewport()
++        viewport.set_shadow_type(Gtk.ShadowType.NONE)
+         viewport.add(vbox)
+         scrolled.add(viewport)
+-        scrolled.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
++        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+         scrolled.show_all()
+         # Add this page to the notebook
+         index = self.notebook.append_page(scrolled)
+@@ -360,7 +360,7 @@ class Preferences(component.Component):
+                 modifier = core_widgets[key][0]
+                 value = core_widgets[key][1]
+                 widget = self.glade.get_object(key)
+-                if type(widget) == gtk.FileChooserButton:
++                if type(widget) == Gtk.FileChooserButton:
+                     for child in widget.get_children():
+                         child.set_sensitive(True)
+                 widget.set_sensitive(True)
+@@ -461,7 +461,7 @@ class Preferences(component.Component):
+             # We don't appear to be connected to a daemon
+             for key in core_widget_list:
+                 widget = self.glade.get_object(key)
+-                if type(widget) == gtk.FileChooserButton:
++                if type(widget) == Gtk.FileChooserButton:
+                     for child in widget.get_children():
+                         child.set_sensitive(False)
+                 widget.set_sensitive(False)
+@@ -763,14 +763,14 @@ class Preferences(component.Component):
+             self.show()
+ 
+         if client.is_classicmode() != new_gtkui_config["classic_mode"]:
+-            dialog = gtk.MessageDialog(
+-                flags=gtk.DIALOG_MODAL|gtk.DIALOG_DESTROY_WITH_PARENT,
+-                type=gtk.MESSAGE_QUESTION,
+-                buttons=gtk.BUTTONS_YES_NO,
++            dialog = Gtk.MessageDialog(
++                flags=Gtk.DialogFlags.MODAL|Gtk.DialogFlags.DESTROY_WITH_PARENT,
++                type=Gtk.MessageType.QUESTION,
++                buttons=Gtk.ButtonsType.YES_NO,
+                 message_format=_("You must restart the deluge UI to change classic mode. Quit now?")
+             )
+             result = dialog.run()
+-            if result == gtk.RESPONSE_YES:
++            if result == Gtk.ResponseType.YES:
+                 shutdown_daemon = (not client.is_classicmode() and
+                                    client.connected() and
+                                    client.is_localhost())
+@@ -890,10 +890,10 @@ class Preferences(component.Component):
+         log.debug("on_test_port_clicked")
+         def on_get_test(status):
+             if status:
+-                self.glade.get_object("port_img").set_from_stock(gtk.STOCK_YES, 4)
++                self.glade.get_object("port_img").set_from_stock(Gtk.STOCK_YES, 4)
+                 self.glade.get_object("port_img").show()
+             else:
+-                self.glade.get_object("port_img").set_from_stock(gtk.STOCK_DIALOG_WARNING, 4)
++                self.glade.get_object("port_img").set_from_stock(Gtk.STOCK_DIALOG_WARNING, 4)
+                 self.glade.get_object("port_img").show()
+         client.core.test_listen_port().addCallback(on_get_test)
+         self.glade.get_object("port_img").set_from_file(
+@@ -929,17 +929,17 @@ class Preferences(component.Component):
+ 
+     def _on_button_plugin_install_clicked(self, widget):
+         log.debug("_on_button_plugin_install_clicked")
+-        chooser = gtk.FileChooserDialog(_("Select the Plugin"),
++        chooser = Gtk.FileChooserDialog(_("Select the Plugin"),
+             self.pref_dialog,
+-            gtk.FILE_CHOOSER_ACTION_OPEN,
+-            buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN,
+-                        gtk.RESPONSE_OK))
++            Gtk.FileChooserAction.OPEN,
++            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN,
++                        Gtk.ResponseType.OK))
+ 
+         chooser.set_transient_for(self.pref_dialog)
+         chooser.set_select_multiple(False)
+         chooser.set_property("skip-taskbar-hint", True)
+ 
+-        file_filter = gtk.FileFilter()
++        file_filter = Gtk.FileFilter()
+         file_filter.set_name(_("Plugin Eggs"))
+         file_filter.add_pattern("*." + "egg")
+         chooser.add_filter(file_filter)
+@@ -947,7 +947,7 @@ class Preferences(component.Component):
+         # Run the dialog
+         response = chooser.run()
+ 
+-        if response == gtk.RESPONSE_OK:
++        if response == Gtk.ResponseType.OK:
+             filepath = chooser.get_filename()
+         else:
+             chooser.destroy()
+diff --git a/deluge/ui/gtkui/queuedtorrents.py b/deluge/ui/gtkui/queuedtorrents.py
+index 96c8a97..54ef2d0 100644
+--- a/deluge/ui/gtkui/queuedtorrents.py
++++ b/deluge/ui/gtkui/queuedtorrents.py
+@@ -36,8 +36,8 @@
+ import base64
+ import os.path
+ 
+-import gtk
+-import gobject
++from gi.repository import Gtk
++from gi.repository import GObject
+ import pkg_resources
+ 
+ import deluge.component as component
+@@ -55,7 +55,7 @@ class QueuedTorrents(component.Component):
+         self.status_item = None
+ 
+         self.config = ConfigManager("gtkui.conf")
+-        self.glade = gtk.Builder()
++        self.glade = Gtk.Builder()
+         self.glade.add_from_file(
+                     pkg_resources.resource_filename("deluge.ui.gtkui",
+                                             "builder/queuedtorrents.ui"))
+@@ -74,9 +74,9 @@ class QueuedTorrents(component.Component):
+ 
+         self.treeview = self.glade.get_object("treeview")
+         self.treeview.append_column(
+-            gtk.TreeViewColumn(_("Torrent"), gtk.CellRendererText(), text=0))
++            Gtk.TreeViewColumn(_("Torrent"), Gtk.CellRendererText(), text=0))
+ 
+-        self.liststore = gtk.ListStore(str, str)
++        self.liststore = Gtk.ListStore(str, str)
+         self.treeview.set_model(self.liststore)
+ 
+     def run(self):
+@@ -130,7 +130,7 @@ class QueuedTorrents(component.Component):
+         except Exception, e:
+             # The statusbar hasn't been loaded yet, so we'll add a timer to
+             # update it later.
+-            gobject.timeout_add(100, self.update_status_bar)
++            GObject.timeout_add(100, self.update_status_bar)
+             return False
+ 
+         # Set the label text for statusbar
+@@ -143,7 +143,7 @@ class QueuedTorrents(component.Component):
+         # have already been added.
+         if self.status_item == None:
+             self.status_item = component.get("StatusBar").add_item(
+-                stock=gtk.STOCK_SORT_DESCENDING,
++                stock=Gtk.STOCK_SORT_DESCENDING,
+                 text=label,
+                 callback=self.on_statusbar_click)
+         else:
+diff --git a/deluge/ui/gtkui/removetorrentdialog.py b/deluge/ui/gtkui/removetorrentdialog.py
+index 7d801d7..65cce9b 100644
+--- a/deluge/ui/gtkui/removetorrentdialog.py
++++ b/deluge/ui/gtkui/removetorrentdialog.py
+@@ -33,7 +33,7 @@
+ #
+ #
+ 
+-import gtk
++from gi.repository import Gtk
+ import pkg_resources
+ 
+ from deluge.ui.client import client
+@@ -60,7 +60,7 @@ class RemoveTorrentDialog(object):
+ 
+         self.__torrent_ids = torrent_ids
+ 
+-        glade = gtk.Builder()
++        glade = Gtk.Builder()
+         glade.add_from_file(
+             pkg_resources.resource_filename("deluge.ui.gtkui",
+                 "builder/remove_torrent_dialog.ui"))
+diff --git a/deluge/ui/gtkui/sidebar.py b/deluge/ui/gtkui/sidebar.py
+index 9623bb0..2ed2981 100644
+--- a/deluge/ui/gtkui/sidebar.py
++++ b/deluge/ui/gtkui/sidebar.py
+@@ -35,7 +35,7 @@
+ #
+ 
+ 
+-import gtk
++from gi.repository import Gtk
+ 
+ import deluge.component as component
+ import deluge.common
+@@ -83,10 +83,10 @@ class SideBar(component.Component):
+         """Adds a tab object to the notebook."""
+         log.debug("add tab:%s" % tab_name )
+         self.tabs[tab_name] = widget
+-        scrolled = gtk.ScrolledWindow()
+-        scrolled.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
++        scrolled = Gtk.ScrolledWindow()
++        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+         scrolled.add(widget)
+-        pos = self.notebook.insert_page(scrolled, gtk.Label(label), -1)
++        pos = self.notebook.insert_page(scrolled, Gtk.Label(label=label), -1)
+         scrolled.show_all()
+ 
+         self.after_update()
+diff --git a/deluge/ui/gtkui/status_tab.py b/deluge/ui/gtkui/status_tab.py
+index b051281..9ef2c33 100644
+--- a/deluge/ui/gtkui/status_tab.py
++++ b/deluge/ui/gtkui/status_tab.py
+@@ -35,7 +35,7 @@
+ #
+ 
+ 
+-import gtk
++from gi.repository import Gtk
+ 
+ from deluge.ui.client import client
+ import deluge.component as component
+diff --git a/deluge/ui/gtkui/statusbar.py b/deluge/ui/gtkui/statusbar.py
+index 3e5c2e4..5a0b1f5 100644
+--- a/deluge/ui/gtkui/statusbar.py
++++ b/deluge/ui/gtkui/statusbar.py
+@@ -34,8 +34,8 @@
+ #
+ 
+ 
+-import gtk
+-import gobject
++from gi.repository import Gtk
++from gi.repository import GObject
+ 
+ from deluge.ui.client import client
+ import deluge.component as component
+@@ -47,11 +47,11 @@ from deluge.log import LOG as log
+ class StatusBarItem:
+     def __init__(self, image=None, stock=None, text=None, callback=None, tooltip=None):
+         self._widgets = []
+-        self._ebox = gtk.EventBox()
+-        self._hbox = gtk.HBox()
++        self._ebox = Gtk.EventBox()
++        self._hbox = Gtk.HBox()
+         self._hbox.set_spacing(5)
+-        self._image = gtk.Image()
+-        self._label = gtk.Label()
++        self._image = Gtk.Image()
++        self._label = Gtk.Label()
+         self._hbox.add(self._image)
+         self._hbox.add(self._label)
+         self._ebox.add(self._hbox)
+@@ -88,7 +88,7 @@ class StatusBarItem:
+         self._image.set_from_file(image)
+ 
+     def set_image_from_stock(self, stock):
+-        self._image.set_from_stock(stock, gtk.ICON_SIZE_MENU)
++        self._image.set_from_stock(stock, Gtk.IconSize.MENU)
+ 
+     def set_text(self, text):
+         if self._label.get_text() != text:
+@@ -135,7 +135,7 @@ class StatusBar(component.Component):
+         }
+         self.current_warnings = []
+         # Add a HBox to the statusbar after removing the initial label widget
+-        self.hbox = gtk.HBox()
++        self.hbox = Gtk.HBox()
+         self.hbox.set_spacing(10)
+         frame = self.statusbar.get_children()[0]
+         frame.remove(frame.get_children()[0])
+@@ -143,7 +143,7 @@ class StatusBar(component.Component):
+         self.statusbar.show_all()
+         # Create the not connected item
+         self.not_connected_item = StatusBarItem(
+-            stock=gtk.STOCK_STOP, text=_("Not Connected"),
++            stock=Gtk.STOCK_STOP, text=_("Not Connected"),
+             callback=self._on_notconnected_item_clicked)
+         # Show the not connected status bar
+         self.show_not_connected()
+@@ -158,7 +158,7 @@ class StatusBar(component.Component):
+         self.remove_item(self.not_connected_item)
+ 
+         self.connections_item = self.add_item(
+-            stock=gtk.STOCK_NETWORK,
++            stock=Gtk.STOCK_NETWORK,
+             callback=self._on_connection_item_clicked,
+             tooltip=_("Connections"))
+ 
+@@ -181,12 +181,12 @@ class StatusBar(component.Component):
+             image=deluge.common.get_pixmap("dht16.png"), tooltip=_("DHT Nodes"))
+ 
+         self.diskspace_item = self.add_item(
+-                stock=gtk.STOCK_HARDDISK,
++                stock=Gtk.STOCK_HARDDISK,
+                 callback=self._on_diskspace_item_clicked,
+                 tooltip=_("Free Disk Space"))
+ 
+         self.health_item = self.add_item(
+-                stock=gtk.STOCK_DIALOG_ERROR,
++                stock=Gtk.STOCK_DIALOG_ERROR,
+                 text=_("No Incoming Connections!"),
+                 callback=self._on_health_icon_clicked)
+ 
+@@ -228,13 +228,13 @@ class StatusBar(component.Component):
+ 
+     def show_not_connected(self):
+         self.hbox.pack_start(
+-            self.not_connected_item.get_eventbox(), expand=False, fill=False)
++            self.not_connected_item.get_eventbox(), True, True, 0)
+ 
+     def add_item(self, image=None, stock=None, text=None, callback=None, tooltip=None):
+         """Adds an item to the status bar"""
+         # The return tuple.. we return whatever widgets we add
+         item = StatusBarItem(image, stock, text, callback, tooltip)
+-        self.hbox.pack_start(item.get_eventbox(), expand=False, fill=False)
++        self.hbox.pack_start(item.get_eventbox(), True, True, 0)
+         return item
+ 
+     def remove_item(self, item):
+@@ -249,15 +249,15 @@ class StatusBar(component.Component):
+         """Adds an item to the StatusBar for seconds"""
+         item = self.add_item(image, stock, text, callback)
+         # Start a timer to remove this item in seconds
+-        gobject.timeout_add(seconds * 1000, self.remove_item, item)
++        GObject.timeout_add(seconds * 1000, self.remove_item, item)
+ 
+     def display_warning(self, text, callback=None):
+         """Displays a warning to the user in the status bar"""
+         if text not in self.current_warnings:
+             item = self.add_item(
+-                stock=gtk.STOCK_DIALOG_WARNING, text=text, callback=callback)
++                stock=Gtk.STOCK_DIALOG_WARNING, text=text, callback=callback)
+             self.current_warnings.append(text)
+-            gobject.timeout_add(3000, self.remove_warning, item)
++            GObject.timeout_add(3000, self.remove_warning, item)
+ 
+     def remove_warning(self, item):
+         self.current_warnings.remove(item.get_text())
+@@ -307,7 +307,7 @@ class StatusBar(component.Component):
+         self.dht_status = value
+         if value:
+             self.hbox.pack_start(
+-                self.dht_item.get_eventbox(), expand=False, fill=False)
++                self.dht_item.get_eventbox(), True, True, 0)
+             self.send_status_request()
+         else:
+             self.remove_item(self.dht_item)
+@@ -389,7 +389,7 @@ class StatusBar(component.Component):
+             self.max_download_speed,
+             _("KiB/s"), show_notset=True, show_other=True)
+         menu.show_all()
+-        menu.popup(None, None, None, event.button, event.time)
++        menu.popup(None, None, None, menu.show_all, event.button, event.time)
+ 
+     def _on_set_download_speed(self, widget):
+         log.debug("_on_set_download_speed")
+@@ -417,7 +417,7 @@ class StatusBar(component.Component):
+             self.max_upload_speed,
+             _("KiB/s"), show_notset=True, show_other=True)
+         menu.show_all()
+-        menu.popup(None, None, None, event.button, event.time)
++        menu.popup(None, None, None, menu.show_all, event.button, event.time)
+ 
+     def _on_set_upload_speed(self, widget):
+         log.debug("_on_set_upload_speed")
+@@ -444,7 +444,7 @@ class StatusBar(component.Component):
+             self._on_set_connection_limit,
+             self.max_connections, show_notset=True, show_other=True)
+         menu.show_all()
+-        menu.popup(None, None, None, event.button, event.time)
++        menu.popup(None, None, None, menu.show_all, event.button, event.time)
+ 
+     def _on_set_connection_limit(self, widget):
+         log.debug("_on_set_connection_limit")
+@@ -453,7 +453,7 @@ class StatusBar(component.Component):
+             value = -1
+         elif widget.get_name() == "other":
+             value = common.show_other_dialog(
+-                _("Set Maximum Connections"), "", gtk.STOCK_NETWORK, None, self.max_connections)
++                _("Set Maximum Connections"), "", Gtk.STOCK_NETWORK, None, self.max_connections)
+             if value == None:
+                 return
+         else:
+diff --git a/deluge/ui/gtkui/systemtray.py b/deluge/ui/gtkui/systemtray.py
+index d9964dd..9dc61d2 100644
+--- a/deluge/ui/gtkui/systemtray.py
++++ b/deluge/ui/gtkui/systemtray.py
+@@ -38,7 +38,7 @@ try:
+ except ImportError:
+     appindicator = None
+ 
+-import gtk
++from gi.repository import Gtk
+ import pkg_resources
+ 
+ import deluge.component as component
+@@ -85,7 +85,7 @@ class SystemTray(component.Component):
+ 
+     def enable(self):
+         """Enables the system tray icon."""
+-        self.tray_glade = gtk.Builder()
++        self.tray_glade = Gtk.Builder()
+         self.tray_glade.add_from_file(
+             pkg_resources.resource_filename("deluge.ui.gtkui",
+                                             "builder/tray_menu.ui"))
+@@ -132,13 +132,14 @@ class SystemTray(component.Component):
+         else:
+             log.debug("Enabling the system tray icon..")
+             if deluge.common.windows_check() or deluge.common.osx_check():
+-                self.tray = gtk.status_icon_new_from_pixbuf(
++                self.tray = Gtk.StatusIcon.new_from_pixbuf(
+                     common.get_logo(32))
+             else:
+                 try:
+-                    self.tray = gtk.status_icon_new_from_icon_name("deluge")
++                    self.tray = Gtk.StatusIcon.new_from_icon_name("deluge")
+                 except:
+                     log.warning("Update PyGTK to 2.10 or greater for SystemTray..")
++                    self.tray = None
+                     return
+ 
+             self.tray.connect("activate", self.on_tray_clicked)
+@@ -260,7 +261,7 @@ class SystemTray(component.Component):
+             max_download_speed, _("Up"), self.upload_rate, max_upload_speed)
+ 
+         # Set the tooltip
+-        self.tray.set_tooltip(msg)
++        self.tray.set_tooltip_text(msg)
+ 
+         self.send_status_request()
+ 
+@@ -350,7 +351,7 @@ class SystemTray(component.Component):
+         else:
+             self.tray_glade.get_object("menuitem_show_deluge").set_active(False)
+ 
+-        popup_function = gtk.status_icon_position_menu
++        popup_function = Gtk.status_icon_position_menu
+         if deluge.common.windows_check():
+             popup_function = None
+             button = 0
+@@ -385,7 +386,7 @@ class SystemTray(component.Component):
+         self.window.quit(shutdown=True)
+ 
+     def on_tray_setbwdown(self, widget, data=None):
+-        if isinstance(widget, gtk.RadioMenuItem):
++        if isinstance(widget, Gtk.RadioMenuItem):
+             #ignore previous radiomenuitem value
+             if not widget.get_active():
+                 return
+@@ -393,7 +394,7 @@ class SystemTray(component.Component):
+             "tray_download_speed_list", self.max_download_speed, "downloading.svg")
+ 
+     def on_tray_setbwup(self, widget, data=None):
+-        if isinstance(widget, gtk.RadioMenuItem):
++        if isinstance(widget, Gtk.RadioMenuItem):
+             #ignore previous radiomenuitem value
+             if not widget.get_active():
+                 return
+diff --git a/deluge/ui/gtkui/toolbar.py b/deluge/ui/gtkui/toolbar.py
+index 5486998..8ee905a 100644
+--- a/deluge/ui/gtkui/toolbar.py
++++ b/deluge/ui/gtkui/toolbar.py
+@@ -34,10 +34,10 @@
+ #
+ 
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk, gtk.glade
+-import gobject
++import gi
++gi.require_version("Gtk", "3.0")
++from gi.repository import Gtk
++from gi.repository import GObject
+ 
+ import deluge.component as component
+ from deluge.ui.client import client
+@@ -99,7 +99,7 @@ class ToolBar(component.Component):
+                                                          tooltip=None):
+         """Adds a toolbutton to the toolbar"""
+         # Create the button
+-        toolbutton = gtk.ToolButton()
++        toolbutton = Gtk.ToolButton()
+         if stock is not None:
+             toolbutton.set_stock_id(stock)
+         if label is not None:
+@@ -122,7 +122,7 @@ class ToolBar(component.Component):
+ 
+     def add_separator(self, position=None):
+         """Adds a separator toolitem"""
+-        sep = gtk.SeparatorToolItem()
++        sep = Gtk.SeparatorToolItem()
+         if position is not None:
+             self.toolbar.insert(sep, position)
+         else:
+diff --git a/deluge/ui/gtkui/torrentdetails.py b/deluge/ui/gtkui/torrentdetails.py
+index d642843..40f541e 100644
+--- a/deluge/ui/gtkui/torrentdetails.py
++++ b/deluge/ui/gtkui/torrentdetails.py
+@@ -36,7 +36,7 @@
+ 
+ """The torrent details component shows info about the selected torrent."""
+ 
+-import gtk
++from gi.repository import Gtk
+ import os
+ import os.path
+ import cPickle
+@@ -283,9 +283,9 @@ class TorrentDetails(component.Component):
+ 
+     def generate_menu(self):
+         """Generates the checklist menu for all the tabs and attaches it"""
+-        menu = gtk.Menu()
++        menu = Gtk.Menu()
+         # Create 'All' menuitem and a separator
+-        menuitem = gtk.CheckMenuItem(self.translate_tabs["All"], True)
++        menuitem = Gtk.CheckMenuItem(self.translate_tabs["All"], True)
+         menuitem.set_name("All")
+ 
+         all_tabs = True
+@@ -298,7 +298,7 @@ class TorrentDetails(component.Component):
+ 
+         menu.append(menuitem)
+ 
+-        menuitem = gtk.SeparatorMenuItem()
++        menuitem = Gtk.SeparatorMenuItem()
+         menu.append(menuitem)
+ 
+         # Create a list in order of tabs to create menu
+@@ -308,7 +308,7 @@ class TorrentDetails(component.Component):
+         menuitem_list.sort()
+ 
+         for pos, name in menuitem_list:
+-            menuitem = gtk.CheckMenuItem(self.translate_tabs[name], True)
++            menuitem = Gtk.CheckMenuItem(self.translate_tabs[name], True)
+             menuitem.set_name(name)
+             menuitem.set_active(self.tabs[name].is_visible)
+             menuitem.connect("toggled", self._on_menuitem_toggled)
+diff --git a/deluge/ui/gtkui/torrentview.py b/deluge/ui/gtkui/torrentview.py
+index b881c16..648f484 100644
+--- a/deluge/ui/gtkui/torrentview.py
++++ b/deluge/ui/gtkui/torrentview.py
+@@ -36,11 +36,11 @@
+ 
+ """The torrent view component that lists all torrents in the session."""
+ 
+-import pygtk
+-pygtk.require('2.0')
+-import gtk
++import gi
++gi.require_version("Gtk", "3.0")
++from gi.repository import Gtk, Gdk, GdkPixbuf
+ import gettext
+-import gobject
++from gi.repository import GObject
+ import warnings
+ from urlparse import urlparse
+ 
+@@ -54,17 +54,17 @@ from removetorrentdialog import RemoveTorrentDialog
+ 
+ # Status icons.. Create them from file only once to avoid constantly
+ # re-creating them.
+-icon_downloading = gtk.gdk.pixbuf_new_from_file(
++icon_downloading = GdkPixbuf.Pixbuf.new_from_file(
+     deluge.common.get_pixmap("downloading16.png"))
+-icon_seeding = gtk.gdk.pixbuf_new_from_file(
++icon_seeding = GdkPixbuf.Pixbuf.new_from_file(
+     deluge.common.get_pixmap("seeding16.png"))
+-icon_inactive = gtk.gdk.pixbuf_new_from_file(
++icon_inactive = GdkPixbuf.Pixbuf.new_from_file(
+     deluge.common.get_pixmap("inactive16.png"))
+-icon_alert = gtk.gdk.pixbuf_new_from_file(
++icon_alert = GdkPixbuf.Pixbuf.new_from_file(
+     deluge.common.get_pixmap("alert16.png"))
+-icon_queued = gtk.gdk.pixbuf_new_from_file(
++icon_queued = GdkPixbuf.Pixbuf.new_from_file(
+     deluge.common.get_pixmap("queued16.png"))
+-icon_checking = gtk.gdk.pixbuf_new_from_file(
++icon_checking = GdkPixbuf.Pixbuf.new_from_file(
+     deluge.common.get_pixmap("checking16.png"))
+ 
+ # Holds the info for which status icon to display based on state
+@@ -117,7 +117,7 @@ def cell_data_statusicon(column, cell, model, row, data):
+ def cell_data_trackericon(column, cell, model, row, data):
+     def on_get_icon(icon):
+         def create_blank_pixbuf():
+-            i = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, True, 8, 16, 16)
++            i = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, True, 8, 16, 16)
+             i.fill(0x00000000)
+             return i
+ 
+@@ -125,8 +125,8 @@ def cell_data_trackericon(column, cell, model, row, data):
+             pixbuf = icon.get_cached_icon()
+             if not pixbuf:
+                 try:
+-                    pixbuf = gtk.gdk.pixbuf_new_from_file_at_size(icon.get_filename(), 16, 16)
+-                except gobject.GError, e:
++                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon.get_filename(), 16, 16)
++                except GObject.GError, e:
+                     # Failed to load the pixbuf (Bad image file), so set a blank pixbuf
+                     pixbuf = create_blank_pixbuf()
+                 finally:
+@@ -245,13 +245,13 @@ class TorrentView(listview.ListView, component.Component):
+                                  status_field=["state", "name"],
+                                  function=cell_data_statusicon)
+         self.add_func_column(_("Size"), listview.cell_data_size,
+-                             [gobject.TYPE_UINT64],
++                             [GObject.TYPE_UINT64],
+                              status_field=["total_wanted"])
+         self.add_func_column(_("Downloaded"), listview.cell_data_size,
+-                             [gobject.TYPE_UINT64],
++                             [GObject.TYPE_UINT64],
+                              status_field=["all_time_download"], default=False)
+         self.add_func_column(_("Uploaded"), listview.cell_data_size,
+-                             [gobject.TYPE_UINT64],
++                             [GObject.TYPE_UINT64],
+                              status_field=["total_uploaded"], default=False)
+         self.add_progress_column(_("Progress"),
+                                  status_field=["progress", "state"],
+@@ -401,7 +401,7 @@ class TorrentView(listview.ListView, component.Component):
+     def update(self):
+         if self.got_state:
+             # Send a status request
+-            gobject.idle_add(self.send_status_request)
++            GObject.idle_add(self.send_status_request)
+ 
+     def update_view(self, load_new_list=False):
+         """Update the torrent view model with data we've received."""
+@@ -473,7 +473,7 @@ class TorrentView(listview.ListView, component.Component):
+             # We do not bother updating since the status hasn't changed
+             self.prev_status = self.status
+             return
+-        gobject.idle_add(self.update_view)
++        GObject.idle_add(self.update_view)
+ 
+     def add_row(self, torrent_id, update=True):
+         """Adds a new torrent row to the treeview"""
+@@ -588,7 +588,7 @@ class TorrentView(listview.ListView, component.Component):
+             else:
+                 self.treeview.get_selection().select_iter(row)
+             torrentmenu = component.get("MenuBar").torrentmenu
+-            torrentmenu.popup(None, None, None, event.button, event.time)
++            torrentmenu.popup(None, None, None, None, event.button, event.time)
+             return True
+ 
+     def on_selection_changed(self, treeselection):
+@@ -639,7 +639,7 @@ class TorrentView(listview.ListView, component.Component):
+ 
+     # Handle keyboard shortcuts
+     def on_key_press_event(self, widget, event):
+-        keyname = gtk.gdk.keyval_name(event.keyval)
++        keyname = Gdk.keyval_name(event.keyval)
+         if keyname is not None:
+             func = getattr(self, 'keypress_' + keyname, None)
+             if func:
+diff --git a/deluge/ui/sessionproxy.py b/deluge/ui/sessionproxy.py
+index 65012d9..f31c897 100644
+--- a/deluge/ui/sessionproxy.py
++++ b/deluge/ui/sessionproxy.py
+@@ -128,7 +128,7 @@ class SessionProxy(component.Component):
+         :rtype: dict
+ 
+         """
+-        if torrent_id in self.torrents:
++        if torrent_id in self.torrents.keys():
+             # Keep track of keys we need to request from the core
+             keys_to_get = []
+             if not keys:

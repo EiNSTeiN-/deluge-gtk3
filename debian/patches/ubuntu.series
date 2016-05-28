@@ -2,3 +2,4 @@ revert-erroneous-commit.patch
 new_release_check.patch
 ubuntu_indicator.patch
 change-glade-to-gtkbuilder.patch
+convert-pygtk2-to-gobject-introspection.patch
