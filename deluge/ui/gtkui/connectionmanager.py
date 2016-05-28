@@ -119,7 +119,8 @@ class ConnectionManager(component.Component):
         Show the ConnectionManager dialog.
         """
         # Get the glade file for the connection manager
-        self.glade = gtk.glade.XML(
+        self.glade = gtk.Builder()
+        self.glade.add_from_file(
                     pkg_resources.resource_filename("deluge.ui.gtkui",
                                             "glade/connection_manager.glade"))
         self.window = component.get("MainWindow")
@@ -167,7 +168,7 @@ class ConnectionManager(component.Component):
             self.hostlist.get_selection().select_path("0")
 
         # Connect the signals to the handlers
-        self.glade.signal_autoconnect(self)
+        self.glade.connect_signals(self)
         self.hostlist.get_selection().connect("changed", self.on_hostlist_selection_changed)
 
         self.__update_list()
