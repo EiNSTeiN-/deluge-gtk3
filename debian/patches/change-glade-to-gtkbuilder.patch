@@ -4,10 +4,10 @@ Date:   Sat May 28 15:30:28 2016 -0400
 
     Switch Glade to GtkBuilder
 
-diff --git a/deluge/ui/gtkui/addtorrentdialog.py b/deluge/ui/gtkui/addtorrentdialog.py
-index 195ac60..b4eadbc 100644
---- a/deluge/ui/gtkui/addtorrentdialog.py
-+++ b/deluge/ui/gtkui/addtorrentdialog.py
+Index: deluge-1.3.12/deluge/ui/gtkui/addtorrentdialog.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/addtorrentdialog.py
++++ deluge-1.3.12/deluge/ui/gtkui/addtorrentdialog.py
 @@ -36,7 +36,7 @@
  
  import pygtk
@@ -38,7 +38,7 @@ index 195ac60..b4eadbc 100644
              "on_button_file_clicked": self._on_button_file_clicked,
              "on_button_url_clicked": self._on_button_url_clicked,
              "on_button_hash_clicked": self._on_button_hash_clicked,
-@@ -97,8 +98,8 @@ class AddTorrentDialog(component.Component):
+@@ -97,8 +98,8 @@ class AddTorrentDialog(component.Compone
          self.previous_selected_torrent = None
  
  
@@ -49,7 +49,7 @@ index 195ac60..b4eadbc 100644
  
          render = gtk.CellRendererText()
          column = gtk.TreeViewColumn(_("Torrent"), render, text=1)
-@@ -148,7 +149,7 @@ class AddTorrentDialog(component.Component):
+@@ -148,7 +149,7 @@ class AddTorrentDialog(component.Compone
              "move_completed_path"
          ]
  
@@ -58,7 +58,7 @@ index 195ac60..b4eadbc 100644
  
      def start(self):
          self.update_core_config()
-@@ -158,15 +159,15 @@ class AddTorrentDialog(component.Component):
+@@ -158,15 +159,15 @@ class AddTorrentDialog(component.Compone
  
      def _show(self, focus=False):
          if client.is_localhost():
@@ -66,15 +66,16 @@ index 195ac60..b4eadbc 100644
 -            self.glade.get_widget("entry_download_path").hide()
 -            self.glade.get_widget("button_move_completed_location").show()
 -            self.glade.get_widget("entry_move_completed_path").hide()
-+            self.glade.get_object("button_location").show()
-+            self.glade.get_object("entry_download_path").hide()
-+            self.glade.get_object("button_move_completed_location").show()
-+            self.glade.get_object("entry_move_completed_path").hide()
-         else:
+-        else:
 -            self.glade.get_widget("button_location").hide()
 -            self.glade.get_widget("entry_download_path").show()
 -            self.glade.get_widget("button_move_completed_location").hide()
 -            self.glade.get_widget("entry_move_completed_path").show()
++            self.glade.get_object("button_location").show()
++            self.glade.get_object("entry_download_path").hide()
++            self.glade.get_object("button_move_completed_location").show()
++            self.glade.get_object("entry_move_completed_path").hide()
++        else:
 +            self.glade.get_object("button_location").hide()
 +            self.glade.get_object("entry_download_path").show()
 +            self.glade.get_object("button_move_completed_location").hide()
@@ -82,7 +83,7 @@ index 195ac60..b4eadbc 100644
  
          if component.get("MainWindow").is_on_active_workspace():
              self.dialog.set_transient_for(component.get("MainWindow").window)
-@@ -375,33 +376,33 @@ class AddTorrentDialog(component.Component):
+@@ -375,33 +376,33 @@ class AddTorrentDialog(component.Compone
          options = self.options[torrent_id]
  
          if client.is_localhost():
@@ -129,7 +130,7 @@ index 195ac60..b4eadbc 100644
              options["move_completed"])
  
      def save_torrent_options(self, row=None):
-@@ -422,16 +423,16 @@ class AddTorrentDialog(component.Component):
+@@ -422,16 +423,16 @@ class AddTorrentDialog(component.Compone
  
          if client.is_localhost():
              options["download_location"] = \
@@ -151,7 +152,7 @@ index 195ac60..b4eadbc 100644
  
          if options["compact_allocation"]:
              # We need to make sure all the files are set to download
-@@ -441,19 +442,19 @@ class AddTorrentDialog(component.Component):
+@@ -441,19 +442,19 @@ class AddTorrentDialog(component.Compone
              self.update_treeview_toggles(self.files_treestore.get_iter_first())
  
          options["max_download_speed"] = \
@@ -178,7 +179,7 @@ index 195ac60..b4eadbc 100644
  
          self.options[torrent_id] = options
  
-@@ -482,35 +483,35 @@ class AddTorrentDialog(component.Component):
+@@ -482,35 +483,35 @@ class AddTorrentDialog(component.Compone
              return
  
          if client.is_localhost():
@@ -227,7 +228,7 @@ index 195ac60..b4eadbc 100644
              self.core_config["move_completed"])
  
      def get_file_priorities(self, torrent_id):
-@@ -624,8 +625,8 @@ class AddTorrentDialog(component.Component):
+@@ -624,8 +625,8 @@ class AddTorrentDialog(component.Compone
  
      def _on_button_url_clicked(self, widget):
          log.debug("_on_button_url_clicked")
@@ -238,7 +239,7 @@ index 195ac60..b4eadbc 100644
  
          dialog.set_default_response(gtk.RESPONSE_OK)
          dialog.set_transient_for(self.dialog)
-@@ -723,9 +724,9 @@ class AddTorrentDialog(component.Component):
+@@ -723,9 +724,9 @@ class AddTorrentDialog(component.Compone
  
      def _on_button_hash_clicked(self, widget):
          log.debug("_on_button_hash_clicked")
@@ -251,7 +252,7 @@ index 195ac60..b4eadbc 100644
  
          dialog.set_default_response(gtk.RESPONSE_OK)
          dialog.set_transient_for(self.dialog)
-@@ -835,8 +836,8 @@ class AddTorrentDialog(component.Component):
+@@ -835,8 +836,8 @@ class AddTorrentDialog(component.Compone
  
      def _on_chk_move_completed_toggled(self, widget):
          value = widget.get_active()
@@ -262,11 +263,10 @@ index 195ac60..b4eadbc 100644
  
      def _on_delete_event(self, widget, event):
          self.hide()
-diff --git a/deluge/ui/gtkui/builder/add_torrent_dialog.ui b/deluge/ui/gtkui/builder/add_torrent_dialog.ui
-new file mode 100644
-index 0000000..e01b0bb
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/add_torrent_dialog.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/add_torrent_dialog.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/add_torrent_dialog.ui
 @@ -0,0 +1,1379 @@
 +<?xml version="1.0"?>
 +<interface>
@@ -1647,11 +1647,10 @@ index 0000000..e01b0bb
 +    </action-widgets>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/connection_manager.ui b/deluge/ui/gtkui/builder/connection_manager.ui
-new file mode 100644
-index 0000000..801fd9e
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/connection_manager.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/connection_manager.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/connection_manager.ui
 @@ -0,0 +1,533 @@
 +<?xml version="1.0"?>
 +<!--Generated with glade3 3.4.5 on Mon Jan 26 23:25:11 2009 -->
@@ -2186,11 +2185,10 @@ index 0000000..801fd9e
 +    </action-widgets>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/create_torrent_dialog.ui b/deluge/ui/gtkui/builder/create_torrent_dialog.ui
-new file mode 100644
-index 0000000..13090ba
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/create_torrent_dialog.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/create_torrent_dialog.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/create_torrent_dialog.ui
 @@ -0,0 +1,1027 @@
 +<?xml version="1.0"?>
 +<!--Generated with glade3 3.4.5 on Sat Sep 20 16:56:06 2008 -->
@@ -3219,11 +3217,10 @@ index 0000000..13090ba
 +    </action-widgets>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/dgtkpopups.ui b/deluge/ui/gtkui/builder/dgtkpopups.ui
-new file mode 100644
-index 0000000..be44b6b
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/dgtkpopups.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/dgtkpopups.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/dgtkpopups.ui
 @@ -0,0 +1,274 @@
 +<?xml version="1.0"?>
 +<!--Generated with glade3 3.4.5 on Wed Nov 26 20:02:15 2008 -->
@@ -3499,11 +3496,10 @@ index 0000000..be44b6b
 +    </action-widgets>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/edit_trackers.ui b/deluge/ui/gtkui/builder/edit_trackers.ui
-new file mode 100644
-index 0000000..490c0d4
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/edit_trackers.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/edit_trackers.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/edit_trackers.ui
 @@ -0,0 +1,528 @@
 +<?xml version="1.0"?>
 +<!--Generated with glade3 3.4.5 on Fri Sep 19 19:14:24 2008 -->
@@ -4033,11 +4029,10 @@ index 0000000..490c0d4
 +    </action-widgets>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/filtertree_menu.ui b/deluge/ui/gtkui/builder/filtertree_menu.ui
-new file mode 100644
-index 0000000..ea4491c
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/filtertree_menu.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/filtertree_menu.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/filtertree_menu.ui
 @@ -0,0 +1,45 @@
 +<?xml version="1.0"?>
 +<!--*- mode: xml -*-->
@@ -4084,11 +4079,10 @@ index 0000000..ea4491c
 +    <property name="visible">True</property>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/main_window.ui b/deluge/ui/gtkui/builder/main_window.ui
-new file mode 100644
-index 0000000..0b6fa90
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/main_window.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/main_window.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/main_window.ui
 @@ -0,0 +1,2698 @@
 +<?xml version="1.0"?>
 +<interface>
@@ -6788,11 +6782,10 @@ index 0000000..0b6fa90
 +    </child>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/move_storage_dialog.ui b/deluge/ui/gtkui/builder/move_storage_dialog.ui
-new file mode 100644
-index 0000000..679413a
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/move_storage_dialog.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/move_storage_dialog.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/move_storage_dialog.ui
 @@ -0,0 +1,152 @@
 +<?xml version="1.0"?>
 +<!--Generated with glade3 3.4.5 on Mon Aug  4 18:09:16 2008 -->
@@ -6946,11 +6939,10 @@ index 0000000..679413a
 +    </action-widgets>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/preferences_dialog.ui b/deluge/ui/gtkui/builder/preferences_dialog.ui
-new file mode 100644
-index 0000000..beb1ec5
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/preferences_dialog.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/preferences_dialog.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/preferences_dialog.ui
 @@ -0,0 +1,5331 @@
 +<?xml version="1.0"?>
 +<interface>
@@ -12283,11 +12275,10 @@ index 0000000..beb1ec5
 +    </child>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/queuedtorrents.ui b/deluge/ui/gtkui/builder/queuedtorrents.ui
-new file mode 100644
-index 0000000..5d42807
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/queuedtorrents.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/queuedtorrents.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/queuedtorrents.ui
 @@ -0,0 +1,189 @@
 +<?xml version="1.0"?>
 +<!--Generated with glade3 3.4.0 on Sun Nov 18 19:38:03 2007 -->
@@ -12478,11 +12469,10 @@ index 0000000..5d42807
 +    </action-widgets>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/remove_torrent_dialog.ui b/deluge/ui/gtkui/builder/remove_torrent_dialog.ui
-new file mode 100644
-index 0000000..ac68dc0
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/remove_torrent_dialog.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/remove_torrent_dialog.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/remove_torrent_dialog.ui
 @@ -0,0 +1,180 @@
 +<?xml version="1.0"?>
 +<!--Generated with glade3 3.4.5 on Thu Nov 27 19:10:40 2008 -->
@@ -12664,11 +12654,10 @@ index 0000000..ac68dc0
 +    </action-widgets>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/torrent_menu.ui b/deluge/ui/gtkui/builder/torrent_menu.ui
-new file mode 100644
-index 0000000..a399049
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/torrent_menu.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/torrent_menu.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/torrent_menu.ui
 @@ -0,0 +1,306 @@
 +<?xml version="1.0"?>
 +<!--*- mode: xml -*-->
@@ -12976,11 +12965,10 @@ index 0000000..a399049
 +    </child>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/builder/tray_menu.ui b/deluge/ui/gtkui/builder/tray_menu.ui
-new file mode 100644
-index 0000000..ba6424b
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/tray_menu.ui
+===================================================================
 --- /dev/null
-+++ b/deluge/ui/gtkui/builder/tray_menu.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/tray_menu.ui
 @@ -0,0 +1,148 @@
 +<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 +<!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
@@ -13130,10 +13118,10 @@ index 0000000..ba6424b
 +    </child>
 +  </object>
 +</interface>
-diff --git a/deluge/ui/gtkui/common.py b/deluge/ui/gtkui/common.py
-index eaee58e..74e8884 100644
---- a/deluge/ui/gtkui/common.py
-+++ b/deluge/ui/gtkui/common.py
+Index: deluge-1.3.12/deluge/ui/gtkui/common.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/common.py
++++ deluge-1.3.12/deluge/ui/gtkui/common.py
 @@ -39,7 +39,7 @@ import os
  
  import pygtk
@@ -13143,7 +13131,7 @@ index eaee58e..74e8884 100644
  
  import pkg_resources
  
-@@ -153,25 +153,26 @@ def show_other_dialog(header, type_str, image_stockid=None, image_filename=None,
+@@ -153,25 +153,26 @@ def show_other_dialog(header, type_str,
      if type(default) != int and type(default) != float:
          raise TypeError("default value needs to be an int or float")
  
@@ -13178,11 +13166,11 @@ index eaee58e..74e8884 100644
      if type(default) == float:
          spinbutton.set_digits(1)
  
-diff --git a/deluge/ui/gtkui/connectionmanager.py b/deluge/ui/gtkui/connectionmanager.py
-index 71aab09..1d8dc26 100644
---- a/deluge/ui/gtkui/connectionmanager.py
-+++ b/deluge/ui/gtkui/connectionmanager.py
-@@ -119,20 +119,21 @@ class ConnectionManager(component.Component):
+Index: deluge-1.3.12/deluge/ui/gtkui/connectionmanager.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/connectionmanager.py
++++ deluge-1.3.12/deluge/ui/gtkui/connectionmanager.py
+@@ -119,20 +119,21 @@ class ConnectionManager(component.Compon
          Show the ConnectionManager dialog.
          """
          # Get the glade file for the connection manager
@@ -13209,7 +13197,7 @@ index 71aab09..1d8dc26 100644
  
          # Create status pixbufs
          if not HOSTLIST_PIXBUFS:
-@@ -167,7 +168,7 @@ class ConnectionManager(component.Component):
+@@ -167,7 +168,7 @@ class ConnectionManager(component.Compon
              self.hostlist.get_selection().select_path("0")
  
          # Connect the signals to the handlers
@@ -13218,7 +13206,7 @@ index 71aab09..1d8dc26 100644
          self.hostlist.get_selection().connect("changed", self.on_hostlist_selection_changed)
  
          self.__update_list()
-@@ -324,17 +325,17 @@ class ConnectionManager(component.Component):
+@@ -324,17 +325,17 @@ class ConnectionManager(component.Compon
          """
          Set the widgets to show the correct options from the config.
          """
@@ -13242,7 +13230,7 @@ index 71aab09..1d8dc26 100644
  
      def __update_buttons(self):
          """
-@@ -342,12 +343,12 @@ class ConnectionManager(component.Component):
+@@ -342,12 +343,12 @@ class ConnectionManager(component.Compon
          """
          if len(self.liststore) == 0:
              # There is nothing in the list
@@ -13260,7 +13248,7 @@ index 71aab09..1d8dc26 100644
  
          model, row = self.hostlist.get_selection().get_selected()
          if not row:
-@@ -364,41 +365,41 @@ class ConnectionManager(component.Component):
+@@ -364,41 +365,41 @@ class ConnectionManager(component.Compon
              localhost = True
  
          # Make sure buttons are sensitive at start
@@ -13315,7 +13303,7 @@ index 71aab09..1d8dc26 100644
              True)
  
      def start_daemon(self, port, config):
-@@ -450,7 +451,7 @@ that you forgot to install the deluged package or it's not in your PATH.")).run(
+@@ -450,7 +451,7 @@ that you forgot to install the deluged p
          user = model[row][HOSTLIST_COL_USER]
          password = model[row][HOSTLIST_COL_PASS]
  
@@ -13324,7 +13312,7 @@ index 71aab09..1d8dc26 100644
              host in ("127.0.0.1", "localhost"):
              # We need to start this localhost
              self.start_daemon(port, deluge.configmanager.get_config_dir())
-@@ -489,13 +490,13 @@ that you forgot to install the deluged package or it's not in your PATH.")).run(
+@@ -489,13 +490,13 @@ that you forgot to install the deluged p
  
      def on_button_addhost_clicked(self, widget):
          log.debug("on_button_addhost_clicked")
@@ -13343,10 +13331,10 @@ index 71aab09..1d8dc26 100644
          response = dialog.run()
          if response == 1:
              username = username_entry.get_text()
-diff --git a/deluge/ui/gtkui/createtorrentdialog.py b/deluge/ui/gtkui/createtorrentdialog.py
-index 3f022b4..bd6a1a6 100644
---- a/deluge/ui/gtkui/createtorrentdialog.py
-+++ b/deluge/ui/gtkui/createtorrentdialog.py
+Index: deluge-1.3.12/deluge/ui/gtkui/createtorrentdialog.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/createtorrentdialog.py
++++ deluge-1.3.12/deluge/ui/gtkui/createtorrentdialog.py
 @@ -52,17 +52,18 @@ from deluge.log import LOG as log
  
  class CreateTorrentDialog:
@@ -13545,10 +13533,10 @@ index 3f022b4..bd6a1a6 100644
          if row is None:
              return
          self.trackers_liststore.remove(row)
-diff --git a/deluge/ui/gtkui/details_tab.py b/deluge/ui/gtkui/details_tab.py
-index f0b1fb0..6056856 100644
---- a/deluge/ui/gtkui/details_tab.py
-+++ b/deluge/ui/gtkui/details_tab.py
+Index: deluge-1.3.12/deluge/ui/gtkui/details_tab.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/details_tab.py
++++ deluge-1.3.12/deluge/ui/gtkui/details_tab.py
 @@ -34,7 +34,7 @@
  #
  
@@ -13587,10 +13575,10 @@ index f0b1fb0..6056856 100644
          ]
  
      def update(self):
-diff --git a/deluge/ui/gtkui/edittrackersdialog.py b/deluge/ui/gtkui/edittrackersdialog.py
-index 6876aac..56a0b9a 100644
---- a/deluge/ui/gtkui/edittrackersdialog.py
-+++ b/deluge/ui/gtkui/edittrackersdialog.py
+Index: deluge-1.3.12/deluge/ui/gtkui/edittrackersdialog.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/edittrackersdialog.py
++++ deluge-1.3.12/deluge/ui/gtkui/edittrackersdialog.py
 @@ -34,7 +34,7 @@
  #
  
@@ -13678,10 +13666,10 @@ index 6876aac..56a0b9a 100644
 -        self.glade.get_widget("textview_trackers").set_buffer(b)
 +        self.glade.get_object("textview_trackers").set_buffer(b)
          self.add_tracker_dialog.hide()
-diff --git a/deluge/ui/gtkui/files_tab.py b/deluge/ui/gtkui/files_tab.py
-index 42a7745..b253c2c 100644
---- a/deluge/ui/gtkui/files_tab.py
-+++ b/deluge/ui/gtkui/files_tab.py
+Index: deluge-1.3.12/deluge/ui/gtkui/files_tab.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/files_tab.py
++++ deluge-1.3.12/deluge/ui/gtkui/files_tab.py
 @@ -34,7 +34,7 @@
  #
  
@@ -13691,7 +13679,7 @@ index 42a7745..b253c2c 100644
  import gobject
  import gettext
  import os.path
-@@ -104,13 +104,14 @@ def cell_progress(column, cell, model, row, data):
+@@ -104,13 +104,14 @@ def cell_progress(column, cell, model, r
  class FilesTab(Tab):
      def __init__(self):
          Tab.__init__(self)
@@ -13746,10 +13734,10 @@ index 42a7745..b253c2c 100644
              "on_menuitem_open_file_activate": self._on_menuitem_open_file_activate,
              "on_menuitem_donotdownload_activate": self._on_menuitem_donotdownload_activate,
              "on_menuitem_normal_activate": self._on_menuitem_normal_activate,
-diff --git a/deluge/ui/gtkui/filtertreeview.py b/deluge/ui/gtkui/filtertreeview.py
-index e9d2ba6..f68a1e8 100644
---- a/deluge/ui/gtkui/filtertreeview.py
-+++ b/deluge/ui/gtkui/filtertreeview.py
+Index: deluge-1.3.12/deluge/ui/gtkui/filtertreeview.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/filtertreeview.py
++++ deluge-1.3.12/deluge/ui/gtkui/filtertreeview.py
 @@ -36,7 +36,6 @@
  
  
@@ -13758,7 +13746,7 @@ index e9d2ba6..f68a1e8 100644
  import pkg_resources
  import warnings
  from gobject import GError
-@@ -96,8 +95,8 @@ class FilterTreeView(component.Component):
+@@ -96,8 +95,8 @@ class FilterTreeView(component.Component
          component.Component.__init__(self, "FilterTreeView", interval=2)
          self.window = component.get("MainWindow")
          glade = self.window.main_glade
@@ -13769,7 +13757,7 @@ index e9d2ba6..f68a1e8 100644
          self.sidebar = component.get("SideBar")
          self.config = ConfigManager("gtkui.conf")
          self.tracker_icons = component.get("TrackerIcons")
-@@ -109,10 +108,11 @@ class FilterTreeView(component.Component):
+@@ -109,10 +108,11 @@ class FilterTreeView(component.Component
          self.sidebar.notebook.connect("hide", self._on_hide)
  
          #menu
@@ -13785,10 +13773,9 @@ index e9d2ba6..f68a1e8 100644
              "select_all": self.on_select_all,
              "pause_all": self.on_pause_all,
              "resume_all": self.on_resume_all
-diff --git a/deluge/ui/gtkui/glade/add_torrent_dialog.glade b/deluge/ui/gtkui/glade/add_torrent_dialog.glade
-deleted file mode 100644
-index 8302376..0000000
---- a/deluge/ui/gtkui/glade/add_torrent_dialog.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/add_torrent_dialog.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/add_torrent_dialog.glade
 +++ /dev/null
 @@ -1,1368 +0,0 @@
 -<?xml version="1.0"?>
@@ -15159,10 +15146,9 @@ index 8302376..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/connection_manager.glade b/deluge/ui/gtkui/glade/connection_manager.glade
-deleted file mode 100644
-index cfe3906..0000000
---- a/deluge/ui/gtkui/glade/connection_manager.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/connection_manager.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/connection_manager.glade
 +++ /dev/null
 @@ -1,530 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -15695,10 +15681,9 @@ index cfe3906..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/create_torrent_dialog.glade b/deluge/ui/gtkui/glade/create_torrent_dialog.glade
-deleted file mode 100644
-index edcc868..0000000
---- a/deluge/ui/gtkui/glade/create_torrent_dialog.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/create_torrent_dialog.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/create_torrent_dialog.glade
 +++ /dev/null
 @@ -1,1021 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -16722,10 +16707,9 @@ index edcc868..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/dgtkpopups.glade b/deluge/ui/gtkui/glade/dgtkpopups.glade
-deleted file mode 100644
-index ee8ebdf..0000000
---- a/deluge/ui/gtkui/glade/dgtkpopups.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/dgtkpopups.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/dgtkpopups.glade
 +++ /dev/null
 @@ -1,264 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -16992,10 +16976,9 @@ index ee8ebdf..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/edit_trackers.glade b/deluge/ui/gtkui/glade/edit_trackers.glade
-deleted file mode 100644
-index 1ad16a9..0000000
---- a/deluge/ui/gtkui/glade/edit_trackers.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/edit_trackers.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/edit_trackers.glade
 +++ /dev/null
 @@ -1,526 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -17524,10 +17507,9 @@ index 1ad16a9..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/filtertree_menu.glade b/deluge/ui/gtkui/glade/filtertree_menu.glade
-deleted file mode 100644
-index 2e9ccdd..0000000
---- a/deluge/ui/gtkui/glade/filtertree_menu.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/filtertree_menu.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/filtertree_menu.glade
 +++ /dev/null
 @@ -1,56 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -17586,10 +17568,9 @@ index 2e9ccdd..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/main_window.glade b/deluge/ui/gtkui/glade/main_window.glade
-deleted file mode 100644
-index 2853c00..0000000
---- a/deluge/ui/gtkui/glade/main_window.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/main_window.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/main_window.glade
 +++ /dev/null
 @@ -1,2710 +0,0 @@
 -<?xml version="1.0"?>
@@ -20302,10 +20283,9 @@ index 2853c00..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/move_storage_dialog.glade b/deluge/ui/gtkui/glade/move_storage_dialog.glade
-deleted file mode 100644
-index 21715ca..0000000
---- a/deluge/ui/gtkui/glade/move_storage_dialog.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/move_storage_dialog.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/move_storage_dialog.glade
 +++ /dev/null
 @@ -1,152 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -20460,10 +20440,9 @@ index 21715ca..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/preferences_dialog.glade b/deluge/ui/gtkui/glade/preferences_dialog.glade
-deleted file mode 100644
-index 2a94e0a..0000000
---- a/deluge/ui/gtkui/glade/preferences_dialog.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/preferences_dialog.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/preferences_dialog.glade
 +++ /dev/null
 @@ -1,5092 +0,0 @@
 -<?xml version="1.0"?>
@@ -25558,10 +25537,9 @@ index 2a94e0a..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/queuedtorrents.glade b/deluge/ui/gtkui/glade/queuedtorrents.glade
-deleted file mode 100644
-index 78b0e59..0000000
---- a/deluge/ui/gtkui/glade/queuedtorrents.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/queuedtorrents.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/queuedtorrents.glade
 +++ /dev/null
 @@ -1,189 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -25753,10 +25731,9 @@ index 78b0e59..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/remove_torrent_dialog.glade b/deluge/ui/gtkui/glade/remove_torrent_dialog.glade
-deleted file mode 100644
-index 25ef2c4..0000000
---- a/deluge/ui/gtkui/glade/remove_torrent_dialog.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/remove_torrent_dialog.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/remove_torrent_dialog.glade
 +++ /dev/null
 @@ -1,180 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -25939,10 +25916,9 @@ index 25ef2c4..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/torrent_menu.glade b/deluge/ui/gtkui/glade/torrent_menu.glade
-deleted file mode 100644
-index 9d6a930..0000000
---- a/deluge/ui/gtkui/glade/torrent_menu.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/torrent_menu.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/torrent_menu.glade
 +++ /dev/null
 @@ -1,322 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -26267,10 +26243,9 @@ index 9d6a930..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/glade/tray_menu.glade b/deluge/ui/gtkui/glade/tray_menu.glade
-deleted file mode 100644
-index a35dc1a..0000000
---- a/deluge/ui/gtkui/glade/tray_menu.glade
+Index: deluge-1.3.12/deluge/ui/gtkui/glade/tray_menu.glade
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/glade/tray_menu.glade
 +++ /dev/null
 @@ -1,154 +0,0 @@
 -<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -26427,10 +26402,10 @@ index a35dc1a..0000000
 -    </child>
 -  </widget>
 -</glade-interface>
-diff --git a/deluge/ui/gtkui/gtkui.py b/deluge/ui/gtkui/gtkui.py
-index e808aa6..c331284 100644
---- a/deluge/ui/gtkui/gtkui.py
-+++ b/deluge/ui/gtkui/gtkui.py
+Index: deluge-1.3.12/deluge/ui/gtkui/gtkui.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/gtkui.py
++++ deluge-1.3.12/deluge/ui/gtkui/gtkui.py
 @@ -55,7 +55,7 @@ except ReactorAlreadyInstalledError:
  import gettext
  import locale
@@ -26449,10 +26424,10 @@ index e808aa6..c331284 100644
  except Exception, e:
      log.error("Unable to initialize gettext/locale!")
      log.exception(e)
-diff --git a/deluge/ui/gtkui/mainwindow.py b/deluge/ui/gtkui/mainwindow.py
-index 6e2f30f..984fabf 100644
---- a/deluge/ui/gtkui/mainwindow.py
-+++ b/deluge/ui/gtkui/mainwindow.py
+Index: deluge-1.3.12/deluge/ui/gtkui/mainwindow.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/mainwindow.py
++++ deluge-1.3.12/deluge/ui/gtkui/mainwindow.py
 @@ -36,7 +36,7 @@
  
  import pygtk
@@ -26503,10 +26478,10 @@ index 6e2f30f..984fabf 100644
          self.window.show()
  
      def hide(self):
-diff --git a/deluge/ui/gtkui/menubar.py b/deluge/ui/gtkui/menubar.py
-index 08729c8..01c9881 100644
---- a/deluge/ui/gtkui/menubar.py
-+++ b/deluge/ui/gtkui/menubar.py
+Index: deluge-1.3.12/deluge/ui/gtkui/menubar.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/menubar.py
++++ deluge-1.3.12/deluge/ui/gtkui/menubar.py
 @@ -36,7 +36,7 @@
  
  import pygtk
@@ -26671,10 +26646,10 @@ index 08729c8..01c9881 100644
          self.move_storage_dialog_entry.set_text(status["save_path"])
          def on_dialog_response_event(widget, response_id):
  
-diff --git a/deluge/ui/gtkui/menubar_osx.py b/deluge/ui/gtkui/menubar_osx.py
-index 43f290c..fb26cef 100644
---- a/deluge/ui/gtkui/menubar_osx.py
-+++ b/deluge/ui/gtkui/menubar_osx.py
+Index: deluge-1.3.12/deluge/ui/gtkui/menubar_osx.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/menubar_osx.py
++++ deluge-1.3.12/deluge/ui/gtkui/menubar_osx.py
 @@ -32,7 +32,7 @@
  #    statement from all source files in the program, then also delete it here.
  #
@@ -26720,10 +26695,10 @@ index 43f290c..fb26cef 100644
  	help_items = help_menu.get_children()
  	about_item = help_items[4]
  	help_menu.remove(about_item)
-diff --git a/deluge/ui/gtkui/new_release_dialog.py b/deluge/ui/gtkui/new_release_dialog.py
-index e93ba68..900fc82 100644
---- a/deluge/ui/gtkui/new_release_dialog.py
-+++ b/deluge/ui/gtkui/new_release_dialog.py
+Index: deluge-1.3.12/deluge/ui/gtkui/new_release_dialog.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/new_release_dialog.py
++++ deluge-1.3.12/deluge/ui/gtkui/new_release_dialog.py
 @@ -46,30 +46,30 @@ class NewReleaseDialog:
      def show(self, available_version):
          self.config = ConfigManager("gtkui.conf")
@@ -26767,11 +26742,11 @@ index e93ba68..900fc82 100644
                  client.daemon.info().addCallback(on_info)
  
          self.dialog.show()
-diff --git a/deluge/ui/gtkui/options_tab.py b/deluge/ui/gtkui/options_tab.py
-index 8e9eaef..759e8fd 100644
---- a/deluge/ui/gtkui/options_tab.py
-+++ b/deluge/ui/gtkui/options_tab.py
-@@ -41,30 +41,31 @@ from deluge.ui.gtkui.torrentdetails import Tab
+Index: deluge-1.3.12/deluge/ui/gtkui/options_tab.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/options_tab.py
++++ deluge-1.3.12/deluge/ui/gtkui/options_tab.py
+@@ -41,30 +41,31 @@ from deluge.ui.gtkui.torrentdetails impo
  class OptionsTab(Tab):
      def __init__(self):
          Tab.__init__(self)
@@ -26782,7 +26757,9 @@ index 8e9eaef..759e8fd 100644
          self._name = "Options"
 -        self._child_widget = glade.get_widget("options_tab")
 -        self._tab_label = glade.get_widget("options_tab_label")
--
++        self._child_widget = glade.get_object("options_tab")
++        self._tab_label = glade.get_object("options_tab_label")
+ 
 -        self.spin_max_download = glade.get_widget("spin_max_download")
 -        self.spin_max_upload = glade.get_widget("spin_max_upload")
 -        self.spin_max_connections = glade.get_widget("spin_max_connections")
@@ -26796,9 +26773,6 @@ index 8e9eaef..759e8fd 100644
 -        self.chk_move_completed = glade.get_widget("chk_move_completed")
 -        self.filechooser_move_completed = glade.get_widget("filechooser_move_completed")
 -        self.entry_move_completed = glade.get_widget("entry_move_completed")
-+        self._child_widget = glade.get_object("options_tab")
-+        self._tab_label = glade.get_object("options_tab_label")
-+
 +        self.spin_max_download = glade.get_object("spin_max_download")
 +        self.spin_max_upload = glade.get_object("spin_max_upload")
 +        self.spin_max_connections = glade.get_object("spin_max_connections")
@@ -26821,10 +26795,10 @@ index 8e9eaef..759e8fd 100644
              "on_button_apply_clicked": self._on_button_apply_clicked,
              "on_button_edit_trackers_clicked": self._on_button_edit_trackers_clicked,
              "on_chk_move_completed_toggled": self._on_chk_move_completed_toggled,
-diff --git a/deluge/ui/gtkui/peers_tab.py b/deluge/ui/gtkui/peers_tab.py
-index 1df379e..02f4019 100644
---- a/deluge/ui/gtkui/peers_tab.py
-+++ b/deluge/ui/gtkui/peers_tab.py
+Index: deluge-1.3.12/deluge/ui/gtkui/peers_tab.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/peers_tab.py
++++ deluge-1.3.12/deluge/ui/gtkui/peers_tab.py
 @@ -34,7 +34,7 @@
  #
  
@@ -26834,7 +26808,7 @@ index 1df379e..02f4019 100644
  import os.path
  import cPickle
  import pkg_resources
-@@ -59,17 +59,18 @@ def cell_data_progress(column, cell, model, row, data):
+@@ -59,17 +59,18 @@ def cell_data_progress(column, cell, mod
  class PeersTab(Tab):
      def __init__(self):
          Tab.__init__(self)
@@ -26876,10 +26850,10 @@ index 1df379e..02f4019 100644
          response = peer_dialog.run()
          if response:
              value = txt_ip.get_text()
-diff --git a/deluge/ui/gtkui/preferences.py b/deluge/ui/gtkui/preferences.py
-index 1de86ef..65b04f0 100644
---- a/deluge/ui/gtkui/preferences.py
-+++ b/deluge/ui/gtkui/preferences.py
+Index: deluge-1.3.12/deluge/ui/gtkui/preferences.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/preferences.py
++++ deluge-1.3.12/deluge/ui/gtkui/preferences.py
 @@ -36,7 +36,7 @@
  
  import pygtk
@@ -27429,10 +27403,10 @@ index 1de86ef..65b04f0 100644
                  if w:
                      w.show()
  
-diff --git a/deluge/ui/gtkui/queuedtorrents.py b/deluge/ui/gtkui/queuedtorrents.py
-index 665e213..96c8a97 100644
---- a/deluge/ui/gtkui/queuedtorrents.py
-+++ b/deluge/ui/gtkui/queuedtorrents.py
+Index: deluge-1.3.12/deluge/ui/gtkui/queuedtorrents.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/queuedtorrents.py
++++ deluge-1.3.12/deluge/ui/gtkui/queuedtorrents.py
 @@ -36,7 +36,7 @@
  import base64
  import os.path
@@ -27442,7 +27416,7 @@ index 665e213..96c8a97 100644
  import gobject
  import pkg_resources
  
-@@ -55,15 +55,16 @@ class QueuedTorrents(component.Component):
+@@ -55,15 +55,16 @@ class QueuedTorrents(component.Component
          self.status_item = None
  
          self.config = ConfigManager("gtkui.conf")
@@ -27464,7 +27438,7 @@ index 665e213..96c8a97 100644
              "on_button_remove_clicked": self.on_button_remove_clicked,
              "on_button_clear_clicked": self.on_button_clear_clicked,
              "on_button_close_clicked": self.on_button_close_clicked,
-@@ -71,7 +72,7 @@ class QueuedTorrents(component.Component):
+@@ -71,7 +72,7 @@ class QueuedTorrents(component.Component
              "on_chk_autoadd_toggled": self.on_chk_autoadd_toggled
          })
  
@@ -27473,7 +27447,7 @@ index 665e213..96c8a97 100644
          self.treeview.append_column(
              gtk.TreeViewColumn(_("Torrent"), gtk.CellRendererText(), text=0))
  
-@@ -90,7 +91,7 @@ class QueuedTorrents(component.Component):
+@@ -90,7 +91,7 @@ class QueuedTorrents(component.Component
          self.update_status_bar()
  
          # We only want the add button sensitive if we're connected to a host
@@ -27482,7 +27456,7 @@ index 665e213..96c8a97 100644
  
          if self.config["autoadd_queued"] or self.config["classic_mode"]:
              self.on_button_add_clicked(None)
-@@ -99,7 +100,7 @@ class QueuedTorrents(component.Component):
+@@ -99,7 +100,7 @@ class QueuedTorrents(component.Component
  
      def stop(self):
          # We only want the add button sensitive if we're connected to a host
@@ -27491,10 +27465,10 @@ index 665e213..96c8a97 100644
          self.update_status_bar()
  
      def add_to_queue(self, torrents):
-diff --git a/deluge/ui/gtkui/removetorrentdialog.py b/deluge/ui/gtkui/removetorrentdialog.py
-index 071992b..7d801d7 100644
---- a/deluge/ui/gtkui/removetorrentdialog.py
-+++ b/deluge/ui/gtkui/removetorrentdialog.py
+Index: deluge-1.3.12/deluge/ui/gtkui/removetorrentdialog.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/removetorrentdialog.py
++++ deluge-1.3.12/deluge/ui/gtkui/removetorrentdialog.py
 @@ -33,7 +33,7 @@
  #
  #
@@ -27531,10 +27505,10 @@ index 071992b..7d801d7 100644
  
              def pluralize_torrents(text):
                  plural_torrent = _("Torrents")
-diff --git a/deluge/ui/gtkui/sidebar.py b/deluge/ui/gtkui/sidebar.py
-index 7c1768b..9623bb0 100644
---- a/deluge/ui/gtkui/sidebar.py
-+++ b/deluge/ui/gtkui/sidebar.py
+Index: deluge-1.3.12/deluge/ui/gtkui/sidebar.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/sidebar.py
++++ deluge-1.3.12/deluge/ui/gtkui/sidebar.py
 @@ -36,7 +36,6 @@
  
  
@@ -27560,10 +27534,10 @@ index 7c1768b..9623bb0 100644
              self.notebook.set_show_tabs(True)
 -
 -
-diff --git a/deluge/ui/gtkui/status_tab.py b/deluge/ui/gtkui/status_tab.py
-index 7ffb007..b051281 100644
---- a/deluge/ui/gtkui/status_tab.py
-+++ b/deluge/ui/gtkui/status_tab.py
+Index: deluge-1.3.12/deluge/ui/gtkui/status_tab.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/status_tab.py
++++ deluge-1.3.12/deluge/ui/gtkui/status_tab.py
 @@ -35,7 +35,7 @@
  #
  
@@ -27637,10 +27611,10 @@ index 7ffb007..b051281 100644
  
 -        component.get("MainWindow").main_glade.get_widget("progressbar").set_fraction(0.0)
 +        component.get("MainWindow").main_glade.get_object("progressbar").set_fraction(0.0)
-diff --git a/deluge/ui/gtkui/statusbar.py b/deluge/ui/gtkui/statusbar.py
-index 8682f69..3e5c2e4 100644
---- a/deluge/ui/gtkui/statusbar.py
-+++ b/deluge/ui/gtkui/statusbar.py
+Index: deluge-1.3.12/deluge/ui/gtkui/statusbar.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/statusbar.py
++++ deluge-1.3.12/deluge/ui/gtkui/statusbar.py
 @@ -111,7 +111,7 @@ class StatusBar(component.Component):
      def __init__(self):
          component.Component.__init__(self, "StatusBar", interval=3)
@@ -27650,10 +27624,10 @@ index 8682f69..3e5c2e4 100644
          self.config = ConfigManager("gtkui.conf")
  
          # Status variables that are updated via callback
-diff --git a/deluge/ui/gtkui/systemtray.py b/deluge/ui/gtkui/systemtray.py
-index c163bc1..d9964dd 100644
---- a/deluge/ui/gtkui/systemtray.py
-+++ b/deluge/ui/gtkui/systemtray.py
+Index: deluge-1.3.12/deluge/ui/gtkui/systemtray.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/systemtray.py
++++ deluge-1.3.12/deluge/ui/gtkui/systemtray.py
 @@ -85,11 +85,12 @@ class SystemTray(component.Component):
  
      def enable(self):
@@ -27788,10 +27762,10 @@ index c163bc1..d9964dd 100644
  
      def setbwlimit(self, widget, string, core_key, ui_key, default, image):
          """Sets the bandwidth limit based on the user selection."""
-diff --git a/deluge/ui/gtkui/toolbar.py b/deluge/ui/gtkui/toolbar.py
-index 5261da5..5486998 100644
---- a/deluge/ui/gtkui/toolbar.py
-+++ b/deluge/ui/gtkui/toolbar.py
+Index: deluge-1.3.12/deluge/ui/gtkui/toolbar.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/toolbar.py
++++ deluge-1.3.12/deluge/ui/gtkui/toolbar.py
 @@ -50,10 +50,10 @@ class ToolBar(component.Component):
          component.Component.__init__(self, "ToolBar")
          log.debug("ToolBar Init..")
@@ -27823,10 +27797,10 @@ index 5261da5..5486998 100644
  
      def visible(self, visible):
          if visible:
-diff --git a/deluge/ui/gtkui/torrentdetails.py b/deluge/ui/gtkui/torrentdetails.py
-index 589c264..d642843 100644
---- a/deluge/ui/gtkui/torrentdetails.py
-+++ b/deluge/ui/gtkui/torrentdetails.py
+Index: deluge-1.3.12/deluge/ui/gtkui/torrentdetails.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/torrentdetails.py
++++ deluge-1.3.12/deluge/ui/gtkui/torrentdetails.py
 @@ -36,7 +36,7 @@
  
  """The torrent details component shows info about the selected torrent."""
@@ -27836,7 +27810,7 @@ index 589c264..d642843 100644
  import os
  import os.path
  import cPickle
-@@ -78,10 +78,10 @@ class TorrentDetails(component.Component):
+@@ -78,10 +78,10 @@ class TorrentDetails(component.Component
          self.window = component.get("MainWindow")
          glade = self.window.main_glade
  
@@ -27849,10 +27823,10 @@ index 589c264..d642843 100644
  
          self.notebook.connect("switch-page", self._on_switch_page)
  
-diff --git a/deluge/ui/gtkui/torrentview.py b/deluge/ui/gtkui/torrentview.py
-index c6eec1c..b881c16 100644
---- a/deluge/ui/gtkui/torrentview.py
-+++ b/deluge/ui/gtkui/torrentview.py
+Index: deluge-1.3.12/deluge/ui/gtkui/torrentview.py
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/torrentview.py
++++ deluge-1.3.12/deluge/ui/gtkui/torrentview.py
 @@ -38,7 +38,7 @@
  
  import pygtk
@@ -27862,7 +27836,7 @@ index c6eec1c..b881c16 100644
  import gettext
  import gobject
  import warnings
-@@ -217,7 +217,7 @@ class TorrentView(listview.ListView, component.Component):
+@@ -217,7 +217,7 @@ class TorrentView(listview.ListView, com
          self.window = component.get("MainWindow")
          # Call the ListView constructor
          listview.ListView.__init__(self,
@@ -27871,7 +27845,7 @@ index c6eec1c..b881c16 100644
                              "torrentview.state")
          log.debug("TorrentView Init..")
  
-@@ -233,7 +233,7 @@ class TorrentView(listview.ListView, component.Component):
+@@ -233,7 +233,7 @@ class TorrentView(listview.ListView, com
          # Register the columns menu with the listview so it gets updated
          # accordingly.
          self.register_checklist_menu(
@@ -27880,3 +27854,16 @@ index c6eec1c..b881c16 100644
  
          # Add the columns to the listview
          self.add_text_column("torrent_id", hidden=True)
+Index: deluge-1.3.12/setup.py
+===================================================================
+--- deluge-1.3.12.orig/setup.py
++++ deluge-1.3.12/setup.py
+@@ -551,7 +551,7 @@ setup(
+     data_files = _data_files,
+     ext_package = "deluge",
+     ext_modules = _ext_modules,
+-    package_data = {"deluge": ["ui/gtkui/glade/*.glade",
++    package_data = {"deluge": ["ui/gtkui/builder/*.ui",
+                                 "data/pixmaps/*.png",
+                                 "data/pixmaps/*.svg",
+                                 "data/pixmaps/*.ico",
