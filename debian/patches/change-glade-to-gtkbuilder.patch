@@ -13515,8 +13515,9 @@ Index: deluge-1.3.12/deluge/ui/gtkui/createtorrentdialog.py
 +        glade.add_from_file(
              pkg_resources.resource_filename(
                  "deluge.ui.gtkui",
-                 "glade/edit_trackers.glade"))
+-                "glade/edit_trackers.glade"))
 -        dialog = glade.get_widget("add_tracker_dialog")
++                "builder/edit_trackers.ui"))
 +        dialog = glade.get_object("add_tracker_dialog")
          dialog.set_transient_for(self.dialog)
 -        textview = glade.get_widget("textview_trackers")
