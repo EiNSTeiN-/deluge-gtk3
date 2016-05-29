@@ -289,89 +289,6 @@ Index: deluge-1.3.12/deluge/ui/gtkui/addtorrentdialog.py
  
                  self.files_treestore[itr][1] = split_text[-1] + os.path.sep
  
-Index: deluge-1.3.12/deluge/ui/gtkui/builder/add_torrent_dialog.ui
-===================================================================
---- deluge-1.3.12.orig/deluge/ui/gtkui/builder/add_torrent_dialog.ui
-+++ deluge-1.3.12/deluge/ui/gtkui/builder/add_torrent_dialog.ui
-@@ -62,8 +62,6 @@
-                     <property name="visible">True</property>
-                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                     <property name="top_padding">5</property>
--                    <property name="left_padding">12</property>
--                    <property name="right_padding">12</property>
-                     <child>
-                       <object class="GtkVBox" id="vbox2">
-                         <property name="visible">True</property>
-@@ -76,17 +74,18 @@
-                             <property name="hscrollbar_policy">automatic</property>
-                             <property name="vscrollbar_policy">automatic</property>
-                             <property name="shadow_type">in</property>
-+                            <property name="min_content_height">100</property>
-                             <child>
-                               <object class="GtkTreeView" id="listview_torrents">
--                                <property name="height_request">100</property>
-                                 <property name="visible">True</property>
-                                 <property name="can_focus">True</property>
--                                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                 <property name="headers_visible">False</property>
-                               </object>
-                             </child>
-                           </object>
-                           <packing>
-+                            <property name="expand">True</property>
-+                            <property name="fill">True</property>
-                             <property name="position">0</property>
-                           </packing>
-                         </child>
-@@ -321,7 +320,6 @@
-                     <property name="visible">True</property>
-                     <property name="can_focus">True</property>
-                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
--                    <property name="border_width">5</property>
-                     <property name="hscrollbar_policy">automatic</property>
-                     <property name="vscrollbar_policy">automatic</property>
-                     <property name="shadow_type">out</property>
-@@ -961,13 +959,14 @@
-                 </child>
-               </object>
-               <packing>
--                <property name="resize">False</property>
--                <property name="shrink">False</property>
-+                <property name="resize">True</property>
-+                <property name="shrink">True</property>
-               </packing>
-             </child>
-           </object>
-           <packing>
-             <property name="position">0</property>
-+            <property name="expand">True</property>
-           </packing>
-         </child>
-         <child internal-child="action_area">
-Index: deluge-1.3.12/deluge/ui/gtkui/builder/connection_manager.ui
-===================================================================
---- deluge-1.3.12.orig/deluge/ui/gtkui/builder/connection_manager.ui
-+++ deluge-1.3.12/deluge/ui/gtkui/builder/connection_manager.ui
-@@ -14,6 +14,7 @@
-     <property name="border_width">5</property>
-     <property name="title" translatable="yes">Add Host</property>
-     <property name="modal">True</property>
-+    <property name="decorated">True</property>
-     <property name="window_position">GTK_WIN_POS_CENTER</property>
-     <property name="destroy_with_parent">True</property>
-     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
-@@ -274,8 +275,9 @@
-                     <property name="visible">True</property>
-                     <property name="can_focus">True</property>
-                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
--                    <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
--                    <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-+                    <property name="hscrollbar_policy">automatic</property>
-+                    <property name="vscrollbar_policy">automatic</property>
-+                    <property name="min_content_height">100</property>
-                     <child>
-                       <object class="GtkTreeView" id="hostlist">
-                         <property name="visible">True</property>
 Index: deluge-1.3.12/deluge/ui/gtkui/common.py
 ===================================================================
 --- deluge-1.3.12.orig/deluge/ui/gtkui/common.py
@@ -3029,3 +2946,85 @@ Index: deluge-1.3.12/deluge/ui/sessionproxy.py
              # Keep track of keys we need to request from the core
              keys_to_get = []
              if not keys:
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/add_torrent_dialog.ui
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/builder/add_torrent_dialog.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/add_torrent_dialog.ui
+@@ -62,8 +62,6 @@
+                     <property name="visible">True</property>
+                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                     <property name="top_padding">5</property>
+-                    <property name="left_padding">12</property>
+-                    <property name="right_padding">12</property>
+                     <child>
+                       <object class="GtkVBox" id="vbox2">
+                         <property name="visible">True</property>
+@@ -76,17 +74,18 @@
+                             <property name="hscrollbar_policy">automatic</property>
+                             <property name="vscrollbar_policy">automatic</property>
+                             <property name="shadow_type">in</property>
++                            <property name="min_content_height">100</property>
+                             <child>
+                               <object class="GtkTreeView" id="listview_torrents">
+-                                <property name="height_request">100</property>
+                                 <property name="visible">True</property>
+                                 <property name="can_focus">True</property>
+-                                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                 <property name="headers_visible">False</property>
+                               </object>
+                             </child>
+                           </object>
+                           <packing>
++                            <property name="expand">True</property>
++                            <property name="fill">True</property>
+                             <property name="position">0</property>
+                           </packing>
+                         </child>
+@@ -321,7 +320,6 @@
+                     <property name="visible">True</property>
+                     <property name="can_focus">True</property>
+                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+-                    <property name="border_width">5</property>
+                     <property name="hscrollbar_policy">automatic</property>
+                     <property name="vscrollbar_policy">automatic</property>
+                     <property name="shadow_type">out</property>
+@@ -961,13 +959,14 @@
+                 </child>
+               </object>
+               <packing>
+-                <property name="resize">False</property>
+-                <property name="shrink">False</property>
++                <property name="resize">True</property>
++                <property name="shrink">True</property>
+               </packing>
+             </child>
+           </object>
+           <packing>
+             <property name="position">0</property>
++            <property name="expand">True</property>
+           </packing>
+         </child>
+         <child internal-child="action_area">
+Index: deluge-1.3.12/deluge/ui/gtkui/builder/connection_manager.ui
+===================================================================
+--- deluge-1.3.12.orig/deluge/ui/gtkui/builder/connection_manager.ui
++++ deluge-1.3.12/deluge/ui/gtkui/builder/connection_manager.ui
+@@ -14,6 +14,7 @@
+     <property name="border_width">5</property>
+     <property name="title" translatable="yes">Add Host</property>
+     <property name="modal">True</property>
++    <property name="decorated">True</property>
+     <property name="window_position">GTK_WIN_POS_CENTER</property>
+     <property name="destroy_with_parent">True</property>
+     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+@@ -274,8 +275,8 @@
+                     <property name="visible">True</property>
+                     <property name="can_focus">True</property>
+                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+-                    <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+-                    <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
++                    <property name="hscrollbar_policy">automatic</property>
++                    <property name="vscrollbar_policy">automatic</property>
+                     <child>
+                       <object class="GtkTreeView" id="hostlist">
+                         <property name="visible">True</property>
