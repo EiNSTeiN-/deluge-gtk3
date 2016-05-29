@@ -1194,6 +1194,15 @@ Index: deluge-1.3.12/deluge/ui/gtkui/files_tab.py
                  ret += value[1]["size"]
          return ret
      ###
+@@ -404,7 +404,7 @@ class FilesTab(Tab):
+     def update_files(self):
+         self.treestore.clear()
+         self.prepare_file_store(self.files_list[self.torrent_id])
+-        self.listview.expand_row("0", False)
++        self.listview.expand_row(Gtk.TreePath.new_from_string("0"), False)
+ 
+     def get_selected_files(self):
+         """Returns a list of file indexes that are selected"""
 @@ -440,7 +440,7 @@ class FilesTab(Tab):
          """
          Go through the tree and update the folder complete percentages.
@@ -2154,7 +2163,23 @@ Index: deluge-1.3.12/deluge/ui/gtkui/peers_tab.py
                      pkg_resources.resource_filename(
                          "deluge",
                           os.path.join("data", "pixmaps", "flags", country.lower() + ".png")))
-@@ -379,7 +379,7 @@ class PeersTab(Tab):
+@@ -361,11 +361,12 @@ class PeersTab(Tab):
+             return True
+ 
+     def _on_query_tooltip(self, widget, x, y, keyboard_tip, tooltip):
+-        if not widget.get_tooltip_context(x, y, keyboard_tip):
++        context = widget.get_tooltip_context(x, y, keyboard_tip)
++        (row_present, x, y, model, path, iter) = context
++
++        if not row_present:
+             return False
+         else:
+-            model, path, iter = widget.get_tooltip_context(x, y, keyboard_tip)
+-
+             country_code = model.get(iter, 5)[0]
+             if country_code != "  " and country_code in COUNTRIES:
+                 tooltip.set_text(COUNTRIES[country_code])
+@@ -379,7 +380,7 @@ class PeersTab(Tab):
      def _on_menuitem_add_peer_activate(self, menuitem):
          """This is a callback for manually adding a peer"""
          log.debug("on_menuitem_add_peer")
