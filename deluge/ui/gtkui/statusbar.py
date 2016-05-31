@@ -52,8 +52,8 @@ class StatusBarItem:
         self._hbox.set_spacing(5)
         self._image = Gtk.Image()
         self._label = Gtk.Label()
-        self._hbox.add(self._image)
-        self._hbox.add(self._label)
+        self._hbox.pack_start(self._image, False, False, 0)
+        self._hbox.pack_start(self._label, False, False, 0)
         self._ebox.add(self._hbox)
 
         # Add image from file or stock
@@ -234,7 +234,7 @@ class StatusBar(component.Component):
         """Adds an item to the status bar"""
         # The return tuple.. we return whatever widgets we add
         item = StatusBarItem(image, stock, text, callback, tooltip)
-        self.hbox.pack_start(item.get_eventbox(), True, True, 0)
+        self.hbox.pack_start(item.get_eventbox(), False, False, 0)
         return item
 
     def remove_item(self, item):

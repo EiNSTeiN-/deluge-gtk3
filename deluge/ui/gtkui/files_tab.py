@@ -404,7 +404,7 @@ class FilesTab(Tab):
     def update_files(self):
         self.treestore.clear()
         self.prepare_file_store(self.files_list[self.torrent_id])
-        self.listview.expand_row("0", False)
+        self.listview.expand_row(Gtk.TreePath.new_from_string("0"), False)
 
     def get_selected_files(self):
         """Returns a list of file indexes that are selected"""
@@ -440,7 +440,7 @@ class FilesTab(Tab):
         """
         Go through the tree and update the folder complete percentages.
         """
-        root = self.treestore.get_iter_root()
+        root = self.treestore.get_iter_first()
         if root is None or self.treestore[root][5] != -1:
             return
 

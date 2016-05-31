@@ -532,23 +532,24 @@ class TorrentView(listview.ListView, component.Component):
         torrent_ids = []
         try:
             paths = self.treeview.get_selection().get_selected_rows()[1]
-        except AttributeError:
+        except AttributeError as e:
             # paths is likely None .. so lets return []
+            log.debug("Error: %s", e)
             return []
         try:
             for path in paths:
                 try:
                     row = self.treeview.get_model().get_iter(path)
-                except Exception, e:
+                except Exception as e:
                     log.debug("Unable to get iter from path: %s", e)
                     continue
 
-                child_row = self.treeview.get_model().convert_iter_to_child_iter(None, row)
+                child_row = self.treeview.get_model().convert_iter_to_child_iter(row)
                 child_row = self.treeview.get_model().get_model().convert_iter_to_child_iter(child_row)
                 if self.liststore.iter_is_valid(child_row):
                     try:
                         value = self.liststore.get_value(child_row, self.columns["torrent_id"].column_indices[0])
-                    except Exception, e:
+                    except Exception as e:
                         log.debug("Unable to get value from row: %s", e)
                     else:
                         torrent_ids.append(value)
@@ -556,7 +557,8 @@ class TorrentView(listview.ListView, component.Component):
                 return []
 
             return torrent_ids
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            log.debug("Error: %s", e)
             return []
 
     def get_torrent_status(self, torrent_id):
