@@ -551,7 +551,7 @@ setup(
     data_files = _data_files,
     ext_package = "deluge",
     ext_modules = _ext_modules,
-    package_data = {"deluge": ["ui/gtkui/glade/*.glade",
+    package_data = {"deluge": ["ui/gtkui/builder/*.ui",
                                 "data/pixmaps/*.png",
                                 "data/pixmaps/*.svg",
                                 "data/pixmaps/*.ico",

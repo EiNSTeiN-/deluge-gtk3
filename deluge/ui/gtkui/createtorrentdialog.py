@@ -400,7 +400,7 @@ class CreateTorrentDialog:
         glade.add_from_file(
             pkg_resources.resource_filename(
                 "deluge.ui.gtkui",
-                "glade/edit_trackers.glade"))
+                "builder/edit_trackers.ui"))
         dialog = glade.get_object("add_tracker_dialog")
         dialog.set_transient_for(self.dialog)
         textview = glade.get_object("textview_trackers")
